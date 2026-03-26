@@ -1,0 +1,37 @@
+{
+  "name": "paperclaw",
+  "version": "0.1.0",
+  "description": "AI agent framework for writing academic papers — from concept to submission",
+  "type": "module",
+  "main": "core/orchestrator.js",
+  "bin": {
+    "paperclaw": "./cli.js"
+  },
+  "scripts": {
+    "start": "node cli.js",
+    "test": "node --test test/"
+  },
+  "keywords": [
+    "academic",
+    "paper",
+    "writing",
+    "agent",
+    "research",
+    "doi",
+    "bibtex",
+    "quarto",
+    "llm"
+  ],
+  "author": "Paper Lab <paperlab@cooperation.tw>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ai-cooperation/paperclaw.git"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  }
+}
