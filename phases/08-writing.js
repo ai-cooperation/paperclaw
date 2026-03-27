@@ -8,7 +8,7 @@ import { readFile, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 
 const SECTIONS = [
-  { id: 'abstract', name: 'Abstract', words: '200-250', system: 'Write a concise abstract (200-250 words). Structure: background, problem, method, results, conclusion. No citations.' },
+  { id: 'abstract', name: 'Abstract', words: '200-250', system: 'Write a concise abstract (200-250 words) as a SINGLE continuous paragraph. Do NOT use subheadings like "Background:", "Method:", "Results:" — write flowing prose. Cover: context, problem, approach, key findings, significance. No citations. No bold text. No bullet points.' },
   { id: 'introduction', name: 'Introduction', words: '600-800', system: 'Write the introduction. Structure: (1) broad context, (2) specific problem + gap, (3) our contributions (3 bullet points), (4) paper outline. Cite references using @citekey.' },
   { id: 'related_work', name: 'Related Work', words: '500-800', system: 'Write related work organized by theme (3-4 subsections). End with a paragraph on limitations of existing work. Cite extensively using @citekey.' },
   { id: 'methods', name: 'Methodology', words: '800-1200', system: 'Write the methodology section. Include mathematical notation where appropriate. Reference the framework figure. Use passive voice for academic tone.' },
@@ -152,6 +152,13 @@ let tableCounter = 0;
 
 function cleanSection(text) {
   let cleaned = text;
+
+  // Remove leading heading (LLM often repeats the section name as ## heading)
+  cleaned = cleaned.replace(/^#{1,3}\s*(Abstract|Introduction|Related Work|Methodology|Methods|Results|Discussion|Conclusion)\s*\n+/i, '');
+  // Remove bold "Abstract" or "**Abstract**" at start
+  cleaned = cleaned.replace(/^\*\*Abstract\*\*\s*\n*/i, '');
+  // Remove structured abstract labels (Background:, Method:, etc.)
+  cleaned = cleaned.replace(/\*\*(Background|Problem|Method|Results|Conclusion|Objective|Design|Findings|Implications):?\*\*\s*/gi, '');
 
   // Remove inline reference/bibliography sections
   cleaned = cleaned.replace(/\n---\n[\s\S]*$/m, '');
