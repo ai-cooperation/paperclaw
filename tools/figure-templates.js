@@ -204,7 +204,7 @@ plt.rcParams.update({
 })
 
 fig, ax = plt.subplots(figsize=(10, 6))
-colors = ['#2563eb', '#16a34a', '#dc2626', '#ca8a04', '#7c3aed']
+colors = ['#2563eb', '#16a34a', '#dc2626', '#ca8a04', '#7c3aed', '#0891b2', '#be185d', '#854d0e', '#4338ca', '#0d9488']
 
 ${(spec.series || []).map((s, i) => `
 x${i} = np.array(${JSON.stringify(s.x || [])})
