@@ -203,6 +203,13 @@ export async function execute(state, llm) {
   }
   logEntries.push(`\n**Gates passed**: ${gates.length - gateFailCount}/${gates.length}\n`);
 
+  // Critical gates (G1-G5) must pass — cap score if not
+  const criticalFails = gates.filter(g => !g.pass && /^G[1-5]/.test(g.name));
+  const gateBlocked = criticalFails.length >= 3; // 3+ critical fails = blocked
+  if (gateBlocked) {
+    console.warn(`Phase 9: ${criticalFails.length} critical gates failed — score will be capped at 70`);
+  }
+
   while (currentRound < MAX_ROUNDS && !passed) {
     currentRound++;
     console.log(`Phase 9: Review round ${currentRound}/${MAX_ROUNDS}`);
@@ -223,12 +230,16 @@ export async function execute(state, llm) {
       `\n### Review\n${review}\n`
     );
 
-    // Pass if score >= threshold (don't rely on LLM P0 tags — they're unreliable)
-    if (score >= PASS_THRESHOLD) {
+    // Pass requires: score >= threshold AND critical gates not blocked
+    const effectiveScore = gateBlocked ? Math.min(score, 70) : score;
+    if (effectiveScore >= PASS_THRESHOLD) {
       passed = true;
-      logEntries.push(`\n**Result**: PASSED (${score}/100)\n`);
+      logEntries.push(`\n**Result**: PASSED (${score}/100${gateBlocked ? ', capped to '+effectiveScore+' by gate failures' : ''})\n`);
       console.log(`Phase 9: PASSED with score ${score}/100`);
       break;
+    }
+    if (gateBlocked && score >= PASS_THRESHOLD) {
+      console.warn(`Phase 9: LLM score ${score}/100 but capped to ${effectiveScore} — fix gate failures first`);
     }
 
     // Fix

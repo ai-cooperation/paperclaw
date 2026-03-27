@@ -148,6 +148,8 @@ Target: ${s.words} words.
  * - Fix LaTeX math delimiters
  * - Remove duplicate headings
  */
+let tableCounter = 0;
+
 function cleanSection(text) {
   let cleaned = text;
 
@@ -163,6 +165,28 @@ function cleanSection(text) {
 
   // Remove markdown fences if LLM wrapped output
   cleaned = cleaned.replace(/^```markdown\n?/m, '').replace(/^```\n?$/m, '');
+
+  // Fix table format: remove ::: div wrappers, fix tbl-colwidths percentages
+  cleaned = cleaned.replace(/^:::\s*\{\.cell\s+tbl-colwidths="[^"]*"\}\s*$/gm, '');
+  cleaned = cleaned.replace(/^::::\s*$/gm, '');
+
+  // Fix tbl-colwidths with percentages → integers
+  cleaned = cleaned.replace(/tbl-colwidths="([^"]+)"/g, (_, val) => {
+    const fixed = val.replace(/%/g, '').trim();
+    return `tbl-colwidths="[${fixed.split(/[\s,]+/).filter(Boolean).join(',')}]"`;
+  });
+
+  // Auto-label tables that have pipe format but no {#tbl-} label
+  // Find pattern: table rows followed by no label → add one
+  cleaned = cleaned.replace(
+    /(\|[-:| ]+\|(?:\n\|.+\|)+)\n(?!\s*:)/gm,
+    (match) => {
+      tableCounter++;
+      const labels = ['main', 'comparison', 'ablation', 'dataset', 'summary', 'config'];
+      const label = labels[tableCounter - 1] || `t${tableCounter}`;
+      return `${match}\n: Table ${tableCounter} {#tbl-${label} tbl-colwidths="[20,20,20,20,20]"}\n`;
+    }
+  );
 
   return cleaned.trim();
 }
