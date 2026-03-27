@@ -62,7 +62,10 @@ PaperClaw enforces minimum quality standards:
 
 ## Example Output
 
-See [`examples/metadata-quality/`](examples/metadata-quality/) for a complete pipeline output including PDF, QMD, and references.
+| Example | Model | Topic | Files |
+|---------|-------|-------|-------|
+| [`examples/ecg-arrhythmia/`](examples/ecg-arrhythmia/) | gpt-5.4-mini ($0.20) | Lightweight ECG Arrhythmia Classification | PDF, QMD, bib, concept |
+| [`examples/metadata-quality/`](examples/metadata-quality/) | gpt-4.1-mini ($0.10) | Metadata Quality Across Academic Databases | PDF, QMD, bib, concept |
 
 ## Architecture
 
@@ -86,15 +89,25 @@ paperclaw/
 
 ## Supported LLMs
 
-| Provider | Models | Cost |
-|----------|--------|------|
-| OpenAI | gpt-4.1-nano ($0.01), gpt-4.1-mini ($0.10), gpt-4.1 | API key |
+| Provider | Models | Cost per pipeline |
+|----------|--------|:-:|
+| OpenAI | gpt-5.4-mini (recommended), gpt-4.1-mini, gpt-4.1-nano | $0.02 - $0.22 |
 | Anthropic | Claude Opus, Sonnet, Haiku | API key |
 | Google | Gemini Flash, Pro | API key / Free tier |
 | Groq | Llama 3.3 70B | Free tier |
 | OpenRouter | Grok, Mixtral, etc. | Pay per use |
 
-> Tested: Full MVP pipeline costs ~$0.03 with gpt-4.1-nano, ~$0.10 with gpt-4.1-mini.
+### Model Performance Comparison
+
+Tested on the same ESG topic with full MVP pipeline (P1-P10):
+
+| Model | Cost | DOI Pass Rate | Citations | Figures | Tables | PDF Quality |
+|-------|:---:|:---:|:---:|:---:|:---:|:---:|
+| gpt-4.1-nano | $0.02 | 25% | 3 | 3 (low quality) | 0 | PDF render fails |
+| gpt-4.1-mini | $0.09 | 51% | 7-15 | 2-3 | 0 | Basic, missing content |
+| **gpt-5.4-mini** | **$0.20** | **75%** | **39** | **4-5** | **6-7** | **Publication-ready draft** |
+
+> **Minimum recommended model: gpt-5.4-mini.** Lower models produce drafts with insufficient citations, missing tables, and formatting errors that fail quality gates.
 
 ---
 

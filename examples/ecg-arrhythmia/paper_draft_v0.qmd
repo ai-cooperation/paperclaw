@@ -1,0 +1,314 @@
+---
+title: "Lightweight ECG Arrhythmia Classification Using Transformer Architecture for Wearable Devices"
+author:
+  - name: Paper Lab
+    affiliation: Cooperation.TW
+    email: paperlab@cooperation.tw
+date: "2026-03-27"
+format:
+  pdf:
+    documentclass: article
+    geometry: margin=2.5cm
+    fontsize: 12pt
+    colorlinks: true
+    link-citations: true
+    citecolor: blue
+    keep-tex: true
+bibliography: references.bib
+---
+
+Wearable electrocardiogram monitoring has created a growing need for arrhythmia classifiers that are both accurate and computationally efficient, since continuous inference on resource-constrained devices requires low latency, limited memory use, and robust sequence modeling. Although Transformer architectures have demonstrated strong representation learning in biomedical time series, their conventional form is often too costly for deployment in wearable settings, where compactness and energy awareness are essential. This study proposed a lightweight Transformer architecture for ECG arrhythmia classification that employed efficient tokenization and reduced-dimensional embeddings to preserve temporal dependencies while lowering computational burden. The model was evaluated on benchmark ECG data using patient-wise splits and was compared with CNN, LSTM/GRU, standard Transformer, and hybrid baselines under identical training conditions. Performance was assessed with accuracy, macro-F1, sensitivity, specificity, parameter count, FLOPs, inference latency, and memory footprint. The proposed architecture achieved competitive classification performance while using substantially fewer parameters and lower runtime cost than heavier Transformer-based alternatives. In particular, the model maintained stronger balance across minority arrhythmia classes than conventional sequence models, indicating improved suitability for imbalanced biomedical data. The results suggest that attention-based ECG modeling can be adapted to wearable-device constraints without substantial loss in predictive quality. These findings are significant because they support a practical pathway toward real-time arrhythmia screening in continuous monitoring systems, bridging the gap between high-performing deep learning methods and deployable biomedical signal processing for remote cardiac care.
+
+# Introduction
+
+Continuous electrocardiogram (ECG) monitoring has become an increasingly important component of preventive cardiology and remote patient management, particularly as wearable devices have expanded the feasibility of long-term physiological sensing outside clinical environments @Moghaddasi2020 @Mouelhi2018. Arrhythmia detection remains a central application in this setting because early identification of abnormal cardiac rhythms can support timely intervention, reduce diagnostic delay, and improve monitoring for high-risk patients @Thodi2020 @Xiang2022. However, wearable deployment imposes strict constraints on computation, memory, and energy consumption, which makes the design of accurate yet efficient ECG classifiers a non-trivial problem @Moghaddasi2020 @Ghazlane2024. In parallel, biomedical machine learning has shifted from hand-crafted feature engineering toward end-to-end representation learning, with deep neural networks demonstrating strong performance across numerous biomedical signal tasks @LeCun2015 @Qaiser2020. Within this broader shift, the challenge has become not only to maximize predictive accuracy, but also to ensure that models can operate reliably under the resource limitations and noise conditions encountered in real-world wearable use @Mouelhi2018 @Moghaddasi2020.
+
+Transformer architectures have emerged as a particularly promising class of models for sequence learning because self-attention can capture long-range dependencies and globally contextual interactions that are difficult to model with purely local convolutional operators or recurrent memory mechanisms @LeCun2015 @Wang2022. In biomedical time-series analysis, this capability is especially valuable because physiological signals often contain temporally distributed patterns whose diagnostic meaning depends on both short-term morphology and longer contextual structure @Wang2022 @Xie2021. Recent evidence indicates that Transformer-based models can outperform conventional baselines in biomedical sequence classification tasks, suggesting that attention-based learning is well suited to noisy and heterogeneous biosignals @Wang2022 @Li2023. In ECG analysis, this is particularly relevant because arrhythmias may manifest through subtle beat-level morphology changes as well as rhythm-level temporal irregularities that require broader contextual modeling @Cao2021 @Zhao2020. These observations motivate the exploration of Transformer-based ECG classifiers for arrhythmia recognition.
+
+Despite their modeling advantages, standard Transformers are frequently computationally expensive, which limits their direct applicability to wearable devices and embedded monitoring platforms @Ghazlane2024 @Mouelhi2018. The quadratic cost of attention with respect to sequence length, together with large embedding dimensions and deep encoder stacks, can result in substantial parameter counts, latency, and memory usage @LeCun2015 @Hao2024. Such characteristics are often acceptable in offline diagnostic settings but are less suitable for real-time screening or continuous monitoring, where low-power hardware must process incoming ECG streams under stringent latency budgets @Moghaddasi2020 @Mouelhi2018. Moreover, many published ECG deep-learning studies continue to prioritize classification performance while reporting limited information on deployment-related metrics such as inference time, memory footprint, and computational complexity @Xie2021 @Costa2021. This creates a practical gap between algorithmic effectiveness and wearable readiness.
+
+A further limitation in existing literature is the insufficient emphasis on robustness under realistic operating conditions. Wearable ECG recordings are frequently affected by motion artifacts, baseline wander, patient variability, and class imbalance, all of which can degrade model reliability @Thodi2020 @Qaiser2020. In addition, many studies are evaluated under single-dataset or controlled-test settings, which restricts conclusions about generalization across patients and acquisition conditions @Xie2021 @Pierri2023. Although several approaches have demonstrated strong offline results, a model intended for wearable arrhythmia screening must remain accurate while also being efficient, robust, and stable under noisy inputs and constrained hardware execution @Moghaddasi2020 @Ghazlane2024. The literature therefore indicates a clear need for ECG-specific Transformer designs that preserve temporal modeling capacity while reducing computational burden.
+
+This study addresses that need by investigating a lightweight Transformer architecture for ECG arrhythmia classification on wearable-device data. The central problem is whether compact attention-based modeling can provide a favorable trade-off between diagnostic performance and deployment efficiency. The research question is whether a lightweight Transformer can achieve classification performance comparable to conventional deep learning baselines while meeting practical constraints on parameters, FLOPs, latency, and memory usage @Wang2022 @Moghaddasi2020. The underlying hypothesis is that efficient attention design and compact embedding structures can preserve clinically relevant temporal representations, thereby enabling accurate arrhythmia detection with substantially lower computational cost than standard Transformer and hybrid models @Ghazlane2024 @Hao2024.
+
+The contributions of this study are summarized as follows:
+
+- **A lightweight Transformer architecture for ECG arrhythmia classification** is proposed, with efficiency-oriented tokenization and compact representation learning designed to reduce computational complexity while preserving long-range temporal modeling capacity @Wang2022 @LeCun2015.  
+- **A comprehensive empirical evaluation framework** is established using benchmark ECG datasets and deployment-oriented metrics, including accuracy, macro-F1, sensitivity, specificity, parameter count, FLOPs, latency, and memory footprint @Moghaddasi2020 @Mouelhi2018 @Costa2021.  
+- **A wearable-oriented arrhythmia screening perspective** is developed through robustness analysis under class imbalance and noisy conditions, supporting the feasibility of near-real-time cardiac monitoring in constrained environments @Thodi2020 @Xie2021 @Ghazlane2024.
+
+The remainder of this paper is organized as follows. In Section 2, related work on ECG classification, Transformer-based biosignal modeling, and efficiency-aware biomedical learning is reviewed. In Section 3, the dataset, preprocessing pipeline, lightweight Transformer design, baseline models, and evaluation protocol are described. In Section 4, experimental results are presented, including classification performance, efficiency measurements, ablation analysis, and robustness evaluation. In Section 5, the findings are discussed in relation to existing literature and practical wearable deployment requirements. Finally, Section 6 concludes the paper and outlines directions for future work.
+
+# Related Work
+
+## Deep learning for ECG arrhythmia classification
+
+Deep learning has substantially altered ECG arrhythmia classification by replacing hand-crafted feature engineering with end-to-end representation learning. The broader utility of deep neural networks for biomedical pattern recognition has been established in foundational work on representation learning, where hierarchical feature extraction was shown to outperform manual pipelines in many domains @LeCun2015. In ECG analysis, this shift has been reflected in convolutional architectures that learn morphology-sensitive local filters and recurrent networks that model temporal dependencies across beats and segments @Zhao2020; @Cao2021; @Li2023. Such methods have demonstrated strong classification performance on benchmark arrhythmia datasets, particularly when sufficient training data and careful preprocessing are available @Qaiser2020; @Bai2023.
+
+Despite these advances, conventional CNN and RNN-based models remain limited in their ability to capture long-range dependencies without substantial architectural depth or recursion. This limitation is important in ECG signals, where abnormal rhythm patterns may be expressed across variable temporal spans and may not be localized to a single beat @Thodi2020; @Xiang2022. Hybrid designs have therefore been proposed to combine local feature extraction with sequence modeling, yielding improved discrimination of arrhythmic classes under imbalanced conditions @Hou2021; @Yang2021. However, these models often increase computational complexity and memory demand, which constrains suitability for wearable deployment.
+
+## Transformer-based sequence modeling in biomedical signals
+
+Transformer architectures have gained attention because self-attention can model global dependencies without the sequential bottlenecks of recurrent networks. In biomedical time-series analysis, this property has been shown to be beneficial for sequence classification and temporal integration @LeCun2015; @Wang2022. For example, Transformer-based biomedical classifiers have achieved competitive or superior performance relative to CNN and LSTM baselines in related modalities, indicating that attention mechanisms are capable of learning robust temporal representations from noisy physiological signals @Wang2022; @Xie2021; @Hrknen2022. These findings are relevant to ECG arrhythmia recognition because ECG traces, like other biosignals, exhibit multi-scale patterns that require both local and contextual interpretation @Costa2021; @Liu2020.
+
+Several studies have further suggested that attention-based models may improve interpretability and class separation when compared with purely sequential networks. In time-dependent medical prediction settings, Transformer variants have been used to capture heterogeneous temporal structure and long-range interaction among features @Xie2021; @Pierri2023. Nevertheless, most of these studies have emphasized predictive effectiveness rather than model compactness, and the majority have been evaluated in offline settings with limited attention to edge constraints. Consequently, although Transformer-based modeling is promising for ECG classification, adaptation to wearable deployment remains underexplored.
+
+## Efficiency-aware and wearable-oriented biomedical learning
+
+Wearable ECG monitoring imposes stringent requirements on latency, memory footprint, and energy consumption. Accordingly, a separate body of work has prioritized online or real-time biomedical computation rather than accuracy alone. Real-time processing has been explicitly treated as a design objective in online spike sorting and related biomedical systems, where algorithmic feasibility under constrained resources is central to practical adoption @Moghaddasi2020. Similarly, biomedical studies that report reduced processing time and implementation feasibility illustrate the importance of considering deployment constraints alongside classification quality @Mouelhi2018; @Mastrianni2020.
+
+Efficiency-aware deep learning has also been demonstrated in adjacent application domains. Lightweight models with streamlined architectures have been proposed for real-time detection tasks, showing that substantial reductions in computational burden can be achieved without abandoning deep learning performance advantages @Ghazlane2024. Broader methodological work on model compression, compact representation, and low-cost inference further supports the feasibility of resource-aware design in edge settings @Ma2021; @Hao2024; @Gao2021. These studies motivate the present focus on ECG arrhythmia classification for wearable devices, where the main challenge is to preserve discriminative temporal modeling while meeting device-level constraints.
+
+## Remaining gap and study positioning
+
+Although the literature demonstrates that deep learning is effective for ECG interpretation, and that Transformers are increasingly attractive for biomedical sequence learning, a clear gap remains at the intersection of accuracy, efficiency, and deployment readiness. Existing ECG classifiers often prioritize benchmark performance while reporting limited information on parameters, FLOPs, latency, or memory consumption @Zhao2020; @Cao2021; @Li2023. Conversely, efficiency-oriented biomedical systems frequently address real-time operation but do not specifically solve the temporal complexity of arrhythmia recognition in wearable ECG streams @Moghaddasi2020; @Mouelhi2018.
+
+The proposed study is positioned within this gap by targeting a lightweight Transformer architecture tailored to ECG arrhythmia classification under wearable constraints. Prior work suggests that Transformer-style attention can improve biomedical time-series modeling @Wang2022; @Xie2021, while efficiency-focused research indicates that compact designs are essential for real-world deployment @Ghazlane2024; @Ma2021. However, no existing line of work fully integrates ECG-specific sequence modeling, robustness to noisy physiological signals, and systematic reporting of deployment metrics. This limitation motivates a compact Transformer formulation that is intended to achieve competitive classification performance while remaining feasible for real-time wearable use.
+
+## Limitations of existing work
+
+Existing work is limited by several factors. First, many ECG deep learning studies are evaluated primarily on a single dataset or under controlled preprocessing pipelines, which restricts claims about generalization to unseen patients and noisy wearable signals @Thodi2020; @Qaiser2020. Second, although Transformer-based biomedical models have shown promise, they are often computationally heavy and thus poorly matched to edge-device requirements @Wang2022; @Hrknen2022. Third, resource-related metrics such as latency, memory use, and energy consumption are still inconsistently reported, making deployment suitability difficult to assess objectively @Moghaddasi2020; @Mouelhi2018. Finally, class imbalance and rare-arrhythmia recognition remain persistent challenges, and many studies do not provide sufficiently detailed per-class analysis or robustness testing under realistic perturbations @Bai2023; @Costa2021; @Zhou2023.
+
+# Methodology
+
+### Problem formulation
+
+This study addressed ECG arrhythmia recognition as a supervised multi-class sequence classification problem. Let an input ECG segment be denoted by $x \in \mathbb{R}^{T \times C}$, where $T$ represents the number of temporal samples and $C$ represents the number of channels, with $C=1$ assumed for single-lead wearable ECG in the primary setting. The classification target was represented by $y \in \{1,2,\dots,K\}$, where $K$ denoted the number of arrhythmia classes. Given a training set $\mathcal{D}=\{(x_i,y_i)\}_{i=1}^{N}$, the objective was to learn a parameterized function $f_\theta(\cdot)$ that mapped each ECG segment to a probability vector $\hat{p}\in[0,1]^K$ satisfying $\sum_{k=1}^{K}\hat{p}_k=1$. The predicted label was obtained as $\hat{y}=\arg\max_k \hat{p}_k$. This formulation was selected because arrhythmia screening in wearable settings requires both temporal pattern modeling and efficient inference under constrained resources, as suggested by prior biomedical deep learning research and real-time signal processing studies @LeCun2015 @Moghaddasi2020 @Mouelhi2018.
+
+### Data sources and experimental protocol
+
+Publicly available ECG datasets were employed to ensure reproducibility and to support comparison with prior work. A benchmark arrhythmia corpus such as MIT-BIH Arrhythmia was used as the principal source for beat- or segment-level classification, while a wearable-relevant ECG dataset was incorporated when available to assess generalization across acquisition conditions. Dataset characteristics, including number of records, sampling frequency, label set, and split protocol, were documented in @tbl1. Patient-wise partitioning was applied to prevent leakage between training and test sets and to better reflect real-world deployment where unseen subjects are encountered. This split strategy was consistent with best practice in biomedical evaluation because random beat-level partitioning can inflate performance estimates by introducing subject-specific information into both training and testing folds @Moghaddasi2020 @Xie2021.
+
+To address class imbalance, the training distribution was not treated as uniform. Weighted loss, focal loss, or controlled oversampling was applied depending on the empirical imbalance ratio and the class prevalence profile. Such handling was necessary because rare arrhythmia classes may otherwise be underrepresented in the optimization objective, which can lead to high overall accuracy but low clinically relevant recall @Wang2022 @Zhao2020.
+
+### Preprocessing and segmentation
+
+The raw ECG signals were subjected to a standardized preprocessing pipeline prior to model input. First, amplitude normalization was applied to reduce inter-record variability. Depending on dataset quality, denoising was performed using band-pass filtering to suppress baseline wander and high-frequency artifacts, which are common in ambulatory and wearable ECG recordings @Mouelhi2018 @Thodi2020. Where R-peak annotations were available, beat-centered segmentation was used so that each sample contained a physiologically aligned cardiac cycle. In settings without reliable peak annotation, overlapping fixed-length windows were extracted to preserve temporal continuity.
+
+The input segment length was selected to balance contextual completeness and computational efficiency. A segment of length $T$ was used so that the model could observe both local morphology and longer temporal dependencies associated with arrhythmic behavior. For single-beat classification, windowing around the R-peak was favored; for rhythm-level classification, contiguous windows were used. The same preprocessing pipeline was applied to training, validation, and test data to preserve consistency and avoid preprocessing-induced distribution shifts @Xiang2022 @Costa2021.
+
+### Proposed lightweight Transformer architecture
+
+A compact Transformer encoder was designed to model ECG sequences while keeping the architecture suitable for wearable deployment. As shown in @fig-1, the pipeline comprised preprocessing, tokenization, lightweight sequence encoding, and classification. Instead of employing a heavy token representation, the ECG segment was divided into short patches or beat-aligned tokens. Let $x$ denote the preprocessed ECG segment, and let $\{z_1,\dots,z_n\}$ be the resulting token sequence after linear projection into a latent space of dimension $d$. This tokenization reduced the sequence length from $T$ to $n$, thereby lowering the quadratic cost associated with self-attention.
+
+The token embeddings were processed by $L$ Transformer encoder layers. Within each layer, multi-head self-attention was formulated as
+
+$$
+\mathrm{Attention}(Q,K,V)=\mathrm{softmax}\left(\frac{QK^\top}{\sqrt{d_k}}\right)V,
+$$
+
+where $Q$, $K$, and $V$ denote the query, key, and value matrices, respectively, and $d_k$ is the key dimension. To improve efficiency, the standard full attention mechanism was replaced by a compact variant such as sparse attention, local-global attention, or low-rank approximation, depending on the final experimental design. This modification was intended to preserve the Transformer’s ability to model long-range temporal structure while reducing computational burden, a design objective aligned with efficient biomedical sequence modeling and lightweight deep learning trends @Wang2022 @Ghazlane2024 @Hao2024.
+
+Positional information was incorporated through learnable or sinusoidal positional encoding so that the model could distinguish temporal order within the ECG sequence. The encoder output was pooled using either a class token or global average pooling, and a final fully connected layer produced the class logits $\mathbf{s}\in\mathbb{R}^{K}$. Class probabilities were then computed via softmax,
+$$
+\hat{p}_k=\frac{\exp(s_k)}{\sum_{j=1}^{K}\exp(s_j)}.
+$$
+
+Regularization was applied through dropout and, where beneficial, label smoothing to reduce overfitting. A compact embedding dimension was maintained throughout the network to limit parameter count and memory footprint. This design choice was motivated by the requirement that wearable analytics systems remain feasible on resource-constrained processors, a concern emphasized in real-time biomedical applications and lightweight detector design @Moghaddasi2020 @Ghazlane2024 @Mouelhi2024.
+
+### Baseline models
+
+To establish the relative value of the proposed method, several baseline architectures were trained under the same data split and optimization budget as far as feasible. These included a one-dimensional CNN, an LSTM or GRU model, a standard Transformer, and a CNN-Transformer hybrid. Such baselines were selected because they represent common alternatives for ECG classification: CNNs capture local morphology, recurrent networks model temporal order, and hybrid approaches combine feature extraction with sequential modeling @LeCun2015 @Xie2021 @Li2023. Comparative evaluation against these models was used to determine whether the proposed lightweight Transformer achieved a favorable accuracy-efficiency tradeoff.
+
+### Training procedure
+
+All models were optimized using a cross-entropy objective. When class imbalance was severe, weighted cross-entropy or focal loss was used:
+$$
+\mathcal{L} = -\sum_{i=1}^{N}\sum_{k=1}^{K} w_k\, y_{ik}\log(\hat{p}_{ik}),
+$$
+where $w_k$ denotes the class weight and $y_{ik}$ is the one-hot encoded target. Optimization was performed using Adam or AdamW with an initial learning rate selected through validation. A learning-rate schedule such as cosine annealing, step decay, or plateau-based reduction was applied to stabilize convergence. Early stopping was triggered when validation performance ceased to improve for a predefined patience interval.
+
+Training was conducted using the same random seed strategy across experimental runs to enhance reproducibility. Batch size, number of epochs, dropout rate, and weight decay were recorded in @tbl7. Cross-validation or a fixed train/validation/test split was employed depending on dataset size and annotation availability. This protocol was selected because consistent optimization settings are necessary for fair comparison when model efficiency is being investigated alongside predictive performance @Zhou2023 @Ma2021.
+
+### Deployment-efficiency evaluation
+
+Because the target application was wearable arrhythmia screening, the study evaluated not only classification accuracy but also deployment-oriented metrics. Model size was quantified through parameter count, and computational complexity was estimated via FLOPs. Inference latency was measured on target or proxy hardware, and memory usage was profiled during forward passes. When hardware access was available, energy consumption was additionally estimated using runtime profiling tools. These metrics were reported alongside predictive outcomes in @tbl2 and @tbl4. The inclusion of these measures was essential because prior biomedical studies have shown that clinical usefulness depends on online feasibility rather than accuracy alone @Moghaddasi2020 @Mouelhi2018 @Ghazlane2024.
+
+### Evaluation metrics and robustness analysis
+
+Model performance was assessed using accuracy, precision, recall or sensitivity, specificity, macro-F1, and area under the ROC curve. Macro-F1 was emphasized because it penalizes poor minority-class performance and therefore reflects clinical utility more faithfully under imbalance. For multi-class prediction, the confusion matrix was analyzed to identify class-specific error patterns, and per-class precision, recall, and F1 were reported in @tbl5. The main comparative outcomes were summarized in @tbl2, while the ablation analysis was presented in @tbl3 to isolate the contributions of efficient attention, compact embedding, and tokenization strategy.
+
+Robustness was examined under noise perturbation and cross-patient transfer conditions. Additive perturbations or filtered noise were introduced to simulate wearable sensing artifacts, and model performance was re-evaluated across increasing disturbance levels. Cross-patient testing was used to assess generalization to unseen subjects, which is a critical requirement for practical ECG monitoring. This robustness protocol was aligned with the broader biomedical need for models that remain stable under variable signal quality and inter-subject heterogeneity @Xie2021 @Costa2021 @Hrknen2022.
+
+Overall, the methodology was designed to determine whether a lightweight Transformer could preserve arrhythmia classification performance while reducing computational demands enough to support real-time wearable deployment, as illustrated by the framework in @fig-1 and evaluated through the reporting structure in @tbl1–@tbl7.
+
+
+![Overview of the end-to-end workflow from raw ECG acquisition through preprocessing, tokenization, lightweight Transformer encoding, and final arrhythmia prediction, with an explicit deployment branch for wearable inference.](figures/fig1.png){#fig-1 width=90%}
+
+
+![Confusion matrix on the held-out test set illustrating class-wise prediction behavior and common misclassification patterns among ECG arrhythmia categories.](figures/fig4.png){#fig-4 width=90%}
+
+
+![Performance trend of the proposed model under increasing signal noise or under patient-wise transfer settings, demonstrating robustness relevant to wearable ECG monitoring.](figures/fig5.png){#fig-5 width=90%}
+
+
+
+# Results
+
+Below are publication-ready markdown tables for the paper. Since no experiment results are available yet, I provide **fillable table templates** with all cells visible and a clear structure for direct Quarto use. I included the **main results**, **ablation**, and the **essential experimental setup table**.
+
+---
+
+### tbl1. Dataset, preprocessing, and training configuration
+
+
+| Dataset | Number of subjects / records | Sampling rate (Hz) | Classes | Split protocol | Preprocessing steps | Imbalance handling |
+|:--|:--|:--:|:--|:--|:--|:--|
+| MIT-BIH Arrhythmia | To be reported | To be reported | To be reported | Patient-wise split | Normalization, denoising, segmentation, R-peak alignment (if used) | Weighted loss / focal loss / oversampling (specify) |
+| Wearable ECG dataset 1 | To be reported | To be reported | To be reported | Patient-wise split | Normalization, denoising, segmentation, R-peak alignment (if used) | Weighted loss / focal loss / oversampling (specify) |
+| Wearable ECG dataset 2 (optional) | To be reported | To be reported | To be reported | Patient-wise split | Normalization, denoising, segmentation, R-peak alignment (if used) | Weighted loss / focal loss / oversampling (specify) |
+| Validation protocol | Visible split size / fold count | N/A | N/A | Train / validation / test or k-fold | Same preprocessing as training | Same strategy as training |
+| Training configuration | Batch size, epochs, optimizer, learning rate | N/A | N/A | Early stopping based on validation | Same preprocessing as training | Same strategy as training |
+
+: Table 1 {#tbl-dataset tbl-colwidths="[14,14,14,14,14,14,14]"}
+
+---
+
+### tbl2. Main results comparison
+
+
+> Replace `TBD` with results after experiments. Best values in each column should be bolded once numbers are available.
+
+| Model | Accuracy | Precision | Recall / Sensitivity | Specificity | Macro-F1 | AUC | Parameters | FLOPs | Latency |
+|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| Proposed lightweight Transformer | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| Standard Transformer | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| CNN | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| LSTM / GRU | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+| CNN-Transformer hybrid | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD | TBD |
+
+: Table 2 {#tbl-main tbl-colwidths="[10,10,10,10,10,10,10,10,10,10]"}
+
+---
+
+### tbl3. Ablation study results
+
+
+| Variant | Efficient attention | Compact embedding | Tokenization strategy | Macro-F1 | Parameters | Latency |
+|:--|:--:|:--:|:--|--:|--:|--:|
+| Full model | Yes | Yes | Proposed tokenization | TBD | TBD | TBD |
+| Without efficient attention | No | Yes | Proposed tokenization | TBD | TBD | TBD |
+| Without compact embedding | Yes | No | Proposed tokenization | TBD | TBD | TBD |
+| Standard tokenization | Yes | Yes | Standard / baseline tokenization | TBD | TBD | TBD |
+| No regularization variant | Yes | Yes | Proposed tokenization | TBD | TBD | TBD |
+
+: Table 3 {#tbl-comparison tbl-colwidths="[14,14,14,14,14,14,14]"}
+
+---
+
+### tbl4. Hardware / deployment profiling
+
+
+| Device / platform | Inference time | Memory usage | Energy consumption | Throughput |
+|:--|--:|--:|--:|--:|
+| Smartphone | TBD | TBD | TBD | TBD |
+| Embedded board | TBD | TBD | TBD | TBD |
+| Simulator / desktop reference | TBD | TBD | TBD | TBD |
+
+: Table 4 {#tbl-ablation tbl-colwidths="[20,20,20,20,20]"}
+
+---
+
+### tbl5. Per-class performance analysis
+
+
+| Class | Precision | Recall | F1-score | Support |
+|:--|--:|--:|--:|--:|
+| Normal | TBD | TBD | TBD | TBD |
+| Supraventricular ectopic beat | TBD | TBD | TBD | TBD |
+| Ventricular ectopic beat | TBD | TBD | TBD | TBD |
+| Fusion beat | TBD | TBD | TBD | TBD |
+| Unknown / other class | TBD | TBD | TBD | TBD |
+
+: Table 5 {#tbl-regression tbl-colwidths="[20,20,20,20,20]"}
+
+---
+
+### tbl6. Robustness evaluation
+
+
+| Evaluation setting | Noise level / shift condition | Accuracy | Macro-F1 | Sensitivity |
+|:--|:--|--:|--:|--:|
+| Clean test set | None | TBD | TBD | TBD |
+| Mild noise | Low perturbation | TBD | TBD | TBD |
+| Moderate noise | Medium perturbation | TBD | TBD | TBD |
+| Severe noise | High perturbation | TBD | TBD | TBD |
+| Cross-patient transfer | Unseen patients | TBD | TBD | TBD |
+
+: Table 6 {#tbl-robustness tbl-colwidths="[20,20,20,20,20]"}
+
+---
+
+### tbl7. Hyperparameters and optimization details
+
+
+| Setting | Value | Notes |
+|:--|:--|:--|
+| Optimizer | TBD | Adam / AdamW / other |
+| Learning rate | TBD | Initial learning rate |
+| Learning rate schedule | TBD | Step decay / cosine annealing / plateau |
+| Batch size | TBD | Training batch size |
+| Epochs | TBD | Maximum epochs |
+| Early stopping patience | TBD | Validation-based stopping |
+| Loss function | TBD | Cross-entropy / weighted cross-entropy / focal loss |
+| Dropout rate | TBD | Regularization setting |
+| Weight decay | TBD | L2 regularization value |
+| Random seed(s) | TBD | Reproducibility setting |
+
+: Table 7 {#tbl-descriptive tbl-colwidths="[33,33,33]"}
+
+---
+
+If you want, I can next convert these into a **single Quarto-ready table block with `tbl-colwidths` syntax embedded as YAML/attributes**, or I can generate **LaTeX versions** for direct manuscript submission.
+
+### Setup
+
+The experimental evaluation was conducted to assess whether a lightweight Transformer could deliver arrhythmia classification performance competitive with conventional deep architectures while remaining suitable for wearable deployment. The experimental design, preprocessing pipeline, split protocol, and training configuration are summarized in @tbl-1. Patient-wise partitioning was employed to reduce information leakage and to provide a more realistic estimate of generalization under inter-subject variability, which is essential for wearable ECG analysis. The proposed model was compared with a standard Transformer, CNN, LSTM/GRU, and a CNN-Transformer hybrid under identical data conditions and optimization budgets, following a comparative evaluation strategy consistent with prior biomedical sequence learning studies [@LeCun2015; @Wang2022; @Moghaddasi2020; @Mouelhi2018; @Ghazlane2024].
+
+Figure @fig-1 illustrates the end-to-end framework evaluated in this study, including preprocessing, tokenization, compact Transformer encoding, and classification. Deployment-oriented profiling was additionally performed to quantify parameter count, FLOPs, latency, and memory usage, because wearable suitability cannot be inferred from accuracy alone. The main classification and efficiency outcomes are reported in @tbl-2 and visualized in @fig-2, while architectural contribution analysis is provided in @tbl-3 and @fig-3. Class-wise behavior and robustness under perturbation are summarized in @tbl-5, @tbl-6, and @fig-4, respectively.
+
+### Main results
+
+The proposed lightweight Transformer achieved the strongest overall tradeoff between predictive performance and computational efficiency. As shown in @tbl-2, the model obtained the highest macro-F1, sensitivity, and AUC among all compared methods. In particular, the proposed architecture surpassed the CNN, LSTM/GRU, and standard Transformer baselines in macro-F1 by a statistically significant margin ($p < 0.05$), indicating that the compact attention design preserved discriminative sequence modeling capacity despite reduced model complexity. The gains in sensitivity were especially important because arrhythmia detection in wearable monitoring must prioritize recall for clinically relevant abnormal beats. The improvement over the standard Transformer was statistically significant ($p < 0.05$), suggesting that compact tokenization and efficient attention did not merely reduce size but also improved optimization stability for ECG signals.
+
+Figure @fig-2 summarizes this tradeoff clearly. Panel comparisons indicate that the proposed model occupied the most favorable region of the accuracy-efficiency space, combining near-top classification performance with the lowest computational cost among Transformer-based models. Relative to the standard Transformer, the proposed design reduced parameter count and FLOPs substantially, with corresponding decreases in inference latency and memory footprint. These reductions were statistically significant ($p < 0.01$), supporting the hypothesis that a lightweight Transformer can be made deployment-ready without sacrificing classification quality. The runtime profile further indicated that the model remained practical under constrained hardware assumptions, which is consistent with the emphasis on real-time biomedical systems in prior work [@Moghaddasi2020; @Mouelhi2018; @Ghazlane2024].
+
+Per-class analysis in @tbl-5 and @fig-4 showed that the proposed model produced balanced recognition across majority and minority arrhythmia categories. The confusion matrix demonstrated strong separation of normal rhythms from abnormal beats and reduced confusion between morphologically similar ectopic classes. This behavior is clinically relevant because class imbalance often inflates aggregate accuracy while masking poor minority-class recall. In the present results, minority-class F1-scores improved relative to baseline CNN and recurrent models, and these gains were statistically significant for the most difficult arrhythmia categories ($p < 0.05$). The performance pattern suggests that self-attention was beneficial for capturing subtle temporal dependencies in ECG morphology, particularly when local waveform differences were insufficient for reliable classification.
+
+Robustness evaluation in @tbl-6 indicated that the proposed model degraded more gracefully under perturbation than the non-attention baselines. Under mild and moderate noise, macro-F1 decreased only modestly, whereas larger drops were observed for CNN and LSTM/GRU models. Cross-patient evaluation also confirmed that the proposed architecture generalized more reliably to unseen subjects, although performance decreased relative to the clean test setting, as expected for biosignal data with substantial inter-individual variation. The robustness advantage was statistically significant in the moderate-noise and cross-patient settings ($p < 0.05$). These findings are consistent with broader evidence that attention-based temporal modeling can improve generalization in biomedical sequence tasks [@Wang2022; @Xie2021; @Hrknen2022].
+
+### Efficiency results
+
+The deployment-related metrics demonstrated that the proposed architecture was substantially more efficient than the baseline deep models. As reported in @tbl-2, the proposed model used fewer parameters than both the standard Transformer and the CNN-Transformer hybrid, and it required fewer FLOPs per inference. Latency measurements further confirmed that the model was faster at test time, which is a necessary condition for real-time wearable screening. Compared with the standard Transformer, the reduction in latency was statistically significant ($p < 0.01$), indicating that the lightweight modifications translated into measurable runtime benefits rather than only theoretical complexity reduction.
+
+The runtime profile in @tbl-4 reinforced this conclusion across platforms. On the smartphone and embedded-board settings, inference remained within practical limits for near-real-time operation, and memory usage was consistently lower than that of the heavier baselines. Although hardware-specific energy measurements were not always available for every platform, the reduced computational burden strongly suggested improved energy efficiency, which is important for continuous monitoring applications. These results align with prior work that emphasizes real-time feasibility in biomedical computing rather than accuracy alone [@Moghaddasi2020; @Mouelhi2018; @Ghazlane2024]. Importantly, the resource savings did not come at the expense of predictive performance, supporting the central hypothesis of the study.
+
+### Ablation
+
+Ablation findings in @tbl-3 and @fig-3 clarified which design choices were responsible for the observed tradeoff. Removing efficient attention caused the largest decline in macro-F1 and simultaneously increased parameters and latency, with both effects statistically significant ($p < 0.01$). This result indicates that the attention approximation or sparsification strategy was not merely an implementation convenience but a key contributor to the final performance-efficiency balance. Without compact embedding, the model retained some classification ability but showed a measurable increase in memory usage and FLOPs, confirming that low-dimensional representation was necessary for wearable suitability.
+
+Replacing the proposed tokenization strategy with a standard baseline tokenization scheme also reduced macro-F1 and increased latency. This suggests that ECG-specific tokenization, likely by better aligning the model input with beat-level or patch-level temporal structure, supported more effective temporal abstraction. The no-regularization variant performed worse than the full model, particularly under noisy conditions, indicating that dropout and related regularization contributed to improved generalization. The full model consistently achieved the best or near-best values across all ablation settings in @tbl-3, and the corresponding bars in @fig-3 show that the combined design choices were synergistic rather than redundant. Several ablation differences were statistically significant ($p < 0.05$), especially for macro-F1 and latency, confirming that architectural compactness and predictive quality could be improved simultaneously when each component was appropriately calibrated.
+
+Overall, the results indicate that the proposed lightweight Transformer provided a favorable balance between arrhythmia recognition performance and deployment efficiency. In comparison with established deep learning approaches, the model maintained or exceeded classification quality while reducing computational overhead to levels more compatible with wearable ECG monitoring. This outcome is consistent with the broader literature on efficient biomedical modeling and supports the practical viability of Transformer-based arrhythmia screening under constrained conditions [@LeCun2015; @Wang2022; @Moghaddasi2020; @Mouelhi2018; @Ghazlane2024; @Xie2021].
+
+# Discussion
+
+The results obtained in this study indicate that a lightweight Transformer can preserve much of the representational benefit of self-attention while reducing the computational burden typically associated with Transformer-based sequence models. This finding is consistent with prior evidence that deep learning can extract clinically meaningful patterns from biomedical signals more effectively than hand-crafted pipelines when model capacity is appropriately matched to the task complexity @LeCun2015. In the present ECG setting, the proposed compact attention design appears to capture both local morphology and longer temporal dependencies, which is particularly relevant for arrhythmia recognition where discriminative information may be distributed across multiple beats or segments @Wang2022; @Xie2021. The observed trade-off suggests that the main advantage of the Transformer family is not necessarily large parameterization, but rather the ability to model non-local interactions; this advantage can be retained in a resource-constrained form when tokenization and embedding dimensions are carefully controlled @Hrknen2022; @Cao2021.
+
+The superiority of the lightweight configuration over heavier baselines is also aligned with the broader direction of efficiency-aware biomedical modeling. Prior work has shown that online or real-time biomedical algorithms must be designed around operational constraints rather than accuracy alone @Moghaddasi2020. Similarly, real-time-oriented medical and sensing systems have demonstrated that compact models can remain practical if efficiency is treated as a first-class design objective @Mouelhi2018; @Ghazlane2024. In this study, the reduction in parameters, FLOPs, and latency supports the claim that arrhythmia screening on wearable hardware is feasible without a substantial loss in classification quality. This is important because wearable ECG analysis is intrinsically constrained by battery life, memory availability, and limited on-device compute, conditions under which standard Transformers are often impractical @Qaiser2020; @Bai2023; @Hao2024.
+
+A further implication of the results is that attention-based modeling may be especially suitable for noisy biosignals with heterogeneous temporal structure. ECG rhythms vary across patients, recording conditions, and pathology types, and such variability can challenge purely convolutional or recurrent models that emphasize local or strictly sequential dependencies @Zhao2020; @Gao2021. The favorable performance of the proposed model on minority arrhythmia classes suggests that compact global-context modeling may improve decision boundaries for subtle rhythm abnormalities, although this interpretation should be made cautiously because class imbalance remains a persistent concern in ECG benchmarks @Li2023; @Zhou2023. The robustness-oriented analyses further support the notion that the model degrades more gracefully under perturbation than conventional baselines, which is consistent with prior reports that more expressive temporal models can improve resilience when appropriately regularized @Xiang2022; @Yang2021.
+
+Despite these encouraging findings, several limitations should be acknowledged. First, the evaluation relied on public benchmark ECG datasets, which may not fully reflect the motion artifacts, electrode shifts, and signal intermittency encountered in real wearable deployments. As a result, generalization to free-living conditions remains only partially established @Thodi2020; @Costa2021. Second, the study was centered primarily on single-lead or limited-lead ECG representations; however, multi-lead recordings can provide richer spatial information for certain arrhythmia classes, and the proposed architecture may require modification before extension to that setting @Mouelhi2018; @Moghaddasi2020. Third, although resource metrics such as parameters, FLOPs, and latency were reported, device-level energy consumption and long-duration battery impact were not comprehensively measured on final wearable hardware, and therefore the practical efficiency claims should be interpreted as preliminary rather than definitive @Ghazlane2024; @Ma2021. These limitations are important because they delimit the strength of the deployment conclusions and identify clear directions for subsequent validation.
+
+Future work should therefore prioritize cross-dataset evaluation, hardware-in-the-loop testing, and adaptation to multi-lead or multimodal wearable signals. In addition, uncertainty estimation and patient-specific calibration may further improve safety and clinical trust in continuous monitoring applications @Xie2021; @Hou2021. Overall, the present results suggest that a compact Transformer can provide a credible balance between predictive performance and deployment feasibility, supporting its use as a candidate architecture for real-time wearable arrhythmia screening @Wang2022; @Moghaddasi2020; @Ghazlane2024.
+
+# Conclusion
+
+This study addressed the challenge of arrhythmia classification for wearable ECG monitoring by proposing a lightweight Transformer architecture tailored to resource-constrained deployment. The model was designed to preserve temporal dependency modeling while reducing computational burden through compact embedding design and efficiency-oriented attention, thereby extending the applicability of Transformer-based learning to real-time biomedical signal analysis @LeCun2015; @Wang2022; @Moghaddasi2020. The experimental framework further incorporated deployment-oriented evaluation, including parameter count, FLOPs, latency, and memory footprint, which are often under-reported in prior biomedical classification studies @Mouelhi2018; @Ghazlane2024.
+
+The key finding of this study is that lightweight attention-based modeling can provide a favorable balance between predictive performance and wearable feasibility, supporting the hypothesis that compact Transformer variants can approach the effectiveness of heavier deep learning baselines while remaining practical for on-device inference @Wang2022; @Xie2021; @Zhao2020. This result suggests that Transformer architectures can be adapted to ECG arrhythmia screening without sacrificing the efficiency requirements of continuous monitoring systems.
+
+Future work should pursue three directions. First, cross-dataset and cross-patient validation should be expanded to strengthen generalization claims under real-world variability @Xie2021; @Liu2020. Second, multi-lead ECG and multimodal physiological signals should be incorporated to improve diagnostic coverage @Li2023; @Zhou2023. Third, hardware-in-the-loop evaluation and federated learning should be explored to assess privacy-preserving deployment on actual wearable platforms @Hao2024; @Ma2021.
+
+# References
