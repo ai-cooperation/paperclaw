@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fig1",
+    "type": "framework",
+    "title": "LLM-Based Analytic Framework for Multilingual ESG Disclosure Assessment in Taiwan-Listed Companies",
+    "caption": "Visual representation of the overall system architecture illustrating the data flow from bilingual Taiwan ESG disclosure inputs, through preprocessing steps, multilingual LLM fine-tuning with ESG lexicon integration, automated scoring modules, and final output generation for assessments.",
+    "data_source": "Methodology section data and system design descriptions",
+    "narrative_role": "Framework",
+    "axes": { "x": "Process Flow", "y": "System Components" },
+    "notes": "Include a flow diagram with modular blocks for data input (Mandarin + English texts), preprocessing (normalization, language detection), LLM fine-tuning components, ESG ontology integration, automated scoring, and output visualization; consider icons or color coding to distinguish bilingual handling and highlight multilingual NLP focus."
+  },
+  {
+    "id": "fig2",
+    "type": "bar",
+    "title": "Performance Comparison of LLM-Based ESG Assessment vs Manual and Rule-Based Methods",
+    "caption": "Quantitative evaluation of the proposed LLM framework against manual and rule-based approaches showing metrics such as accuracy, precision, recall, and F1-score across overall dataset and segmented by industry sectors. The chart demonstrates the improved effectiveness and robustness of the LLM method.",
+    "data_source": "Experimental results dataset (future data)",
+    "narrative_role": "Main Results",
+    "axes": { "x": "Assessment Method (Manual, Rule-Based, LLM)", "y": "Performance Metric Value" },
+    "notes": "Use grouped bar charts for each metric with color differentiation for methods; including sector-wise breakdown bars or a separate line chart for temporal trends could be useful. Annotate bars with exact values. Prepare placeholders in the figure to accommodate future results."
+  },
+  {
+    "id": "fig3",
+    "type": "heatmap",
+    "title": "Semantic Patterns and Key ESG Themes Extracted from Bilingual Corporate Disclosures",
+    "caption": "Heatmap visualization of frequency and co-occurrence of major ESG-related terms and themes detected by the LLM from bilingual Taiwan-listed company disclosures. The figure highlights linguistic nuances, theme prominence, and sectoral variations capturing the interpretability and semantic richness of the automated analysis.",
+    "data_source": "Processed ESG disclosure texts (after LLM semantic extraction)",
+    "narrative_role": "Mechanism",
+    "axes": { "x": "ESG Themes / Keywords", "y": "Industry Sectors or Languages" },
+    "notes": "Generate a heatmap matrix with intensity showing term frequency or co-occurrence scores, differentiated per language (Mandarin vs English) or sector. Include labels for key terms and sectors. Provide suitable color scale to reflect semantic intensity. May supplement with a word cloud inset for prominent keywords."
+  }
+]

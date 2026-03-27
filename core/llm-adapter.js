@@ -47,6 +47,10 @@ function createOpenAIAdapter(model, apiKey) {
     'gpt-4.1': [2.00, 8.00],
     'gpt-4o-mini': [0.15, 0.60],
     'gpt-4o': [2.50, 10.00],
+    'gpt-5-mini': [0.80, 3.20],
+    'gpt-5.1': [3.00, 12.00],
+    'gpt-5.4-mini': [0.80, 3.20],
+    'o4-mini': [1.10, 4.40],
   };
   const [costIn, costOut] = pricing[selectedModel] || [0.40, 1.60];
 
@@ -55,12 +59,14 @@ function createOpenAIAdapter(model, apiKey) {
     model: selectedModel,
     async chat(messages, options = {}) {
       const url = 'https://api.openai.com/v1/chat/completions';
+      const isNewModel = /^(gpt-5|o[34])/.test(this.model);
+      const tokenParam = isNewModel ? 'max_completion_tokens' : 'max_tokens';
       const body = {
         model: this.model,
         messages: options.system
           ? [{ role: 'system', content: options.system }, ...messages]
           : messages,
-        max_tokens: options.maxTokens || 4096,
+        [tokenParam]: options.maxTokens || 4096,
       };
 
       // Retry up to 5 times with increasing delay
