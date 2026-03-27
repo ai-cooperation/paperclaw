@@ -76,11 +76,10 @@ You MUST output in this EXACT format:
 | **TOTAL** | **X** | **100** |
 
 ## Issues
-- [P0] ...
-- [P1] ...
-- [P2] ...
+List specific issues found, with location and suggested fix.
 
-Be critical but fair. Match Q1 journal standards.`;
+Be critical but fair. Match Q1 journal standards.
+Paper passes review if TOTAL ≥ 80.`;
 
 const FIX_SYSTEM = `You are a paper revision specialist. Given a review report with specific issues, fix the paper draft.
 Rules:
