@@ -1,0 +1,17 @@
+I can fix the draft, but I’m missing the actual manuscript text and the `.bib` file contents.
+
+Right now, the review indicates the submission contains only a reference list, and your message doesn’t include:
+- the paper’s title/abstract/body
+- the BibTeX entries to audit
+- any figures/tables or existing section text
+
+Please paste or upload:
+1. the full current draft text, and  
+2. the complete `.bib` file contents.
+
+Once you provide them, I’ll return the **complete revised sections** with:
+- a proper IMRaD structure,
+- explicit research gap and questions/hypotheses,
+- methods, results, and discussion,
+- corrected citations using only the provided bibliography,
+- and cleaned BibTeX entries where possible.

@@ -163,8 +163,8 @@ function cleanSection(text) {
   cleaned = cleaned.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
   cleaned = cleaned.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
 
-  // Remove markdown fences if LLM wrapped output
-  cleaned = cleaned.replace(/^```markdown\n?/m, '').replace(/^```\n?$/m, '');
+  // Remove ALL markdown/code fences (LLM often wraps tables in them)
+  cleaned = cleaned.replace(/^```(?:markdown|)?\s*$/gm, '');
 
   // Fix table format: remove ::: div wrappers, fix tbl-colwidths percentages
   cleaned = cleaned.replace(/^:::\s*\{\.cell\s+tbl-colwidths="[^"]*"\}\s*$/gm, '');
@@ -270,5 +270,55 @@ bibliography: references.bib
     return content;
   });
 
-  return frontmatter + sections.join('\n\n') + '\n\n# References\n';
+  let qmd = frontmatter + sections.join('\n\n') + '\n\n# References\n';
+
+  // Final pass: fix all tables in assembled QMD
+  qmd = fixAllTables(qmd);
+
+  return qmd;
+}
+
+/**
+ * Final table fix pass on assembled QMD.
+ * Handles all LLM table format variants:
+ * 1. Remove standalone **tbl-colwidths:** text lines
+ * 2. Remove ::: div wrappers
+ * 3. Add {#tbl-label} to every table that doesn't have one
+ */
+function fixAllTables(qmd) {
+  // Remove code fences wrapping tables (```markdown ... ```)
+  let fixed = qmd.replace(/^```(?:markdown)?\s*\n((?:\|[^\n]+\|\n)+)```\s*$/gm, '$1');
+  // Also handle fences with separator rows inside
+  fixed = fixed.replace(/^```(?:markdown)?\s*$/gm, '');
+
+  // Remove **tbl-colwidths:** standalone lines
+  fixed = fixed.replace(/^\*\*tbl-colwidths:\*\*\s*`[^`]+`\s*$/gm, '');
+
+  // Remove ::: {.cell ...} and :::: wrappers
+  fixed = fixed.replace(/^:::\s*\{[^}]*\}\s*$/gm, '');
+  fixed = fixed.replace(/^::::\s*$/gm, '');
+
+  // Find all table blocks (separator line + data rows) and ensure each has a label
+  let tblCount = 0;
+  const labels = ['dataset', 'main', 'comparison', 'ablation', 'regression', 'robustness', 'descriptive', 'sensitivity'];
+
+  // Match: header row, separator row, 1+ data rows — as a complete table block
+  fixed = fixed.replace(
+    /(\|[^\n]+\|\n\|[-:| ]+\|(?:\n\|[^\n]+\|)+)/g,
+    (tableBlock) => {
+      // Check if this table already has a Quarto label after it
+      const afterTable = fixed.slice(fixed.indexOf(tableBlock) + tableBlock.length, fixed.indexOf(tableBlock) + tableBlock.length + 100);
+      if (/\n\s*:.*\{#tbl-/.test(afterTable)) return tableBlock;
+
+      tblCount++;
+      const label = labels[tblCount - 1] || `t${tblCount}`;
+      const ncols = (tableBlock.split('\n')[0].match(/\|/g) || []).length - 1;
+      const colWidth = Math.round(100 / ncols);
+      const widths = Array(ncols).fill(colWidth).join(',');
+
+      return `${tableBlock}\n\n: Table ${tblCount} {#tbl-${label} tbl-colwidths="[${widths}]"}`;
+    }
+  );
+
+  return fixed;
 }

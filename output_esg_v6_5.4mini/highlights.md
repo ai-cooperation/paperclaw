@@ -1,0 +1,5 @@
+- LLMs matched expert ESG disclosure ratings better than rule-based scoring.  
+- Taiwan-listed firms showed uneven ESG disclosure quality across industries.  
+- Semantic completeness improved ESG assessment beyond keyword counting.  
+- Governance strength and foreign ownership linked to fuller ESG disclosure.  
+- The framework enabled scalable, auditable ESG benchmarking in Chinese reports.

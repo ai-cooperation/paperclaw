@@ -1,0 +1,67 @@
+[
+  {
+    "id": "fig1",
+    "type": "framework",
+    "title": "LLM-Assisted ESG Disclosure Assessment Workflow",
+    "caption": "Figure 1. LLM-assisted ESG disclosure assessment framework for Taiwan-listed companies.",
+    "data_source": "Annual reports and sustainability reports of Taiwan-listed firms; expert-coded benchmark dataset; traditional keyword/rule-based scoring outputs; LLM-generated ESG scores",
+    "narrative_role": "Framework",
+    "axes": {
+      "x": "Process stages",
+      "y": "Information flow / modules"
+    },
+    "notes": "Use a left-to-right pipeline diagram: document collection -> preprocessing -> ESG section detection -> prompt-based LLM scoring -> expert validation -> benchmarking against keyword/rule-based methods -> firm-level analysis. Include separate branches for Chinese and bilingual reports if helpful. Visually emphasize auditability and comparison points."
+  },
+  {
+    "id": "fig2",
+    "type": "bar",
+    "title": "LLM Versus Traditional Methods in Matching Expert ESG Ratings",
+    "caption": "Figure 2. LLM-assisted ESG scoring exhibits stronger alignment with expert human evaluations than keyword-based and rule-based methods.",
+    "data_source": "Expert benchmark labels; LLM output scores; keyword-based scores; rule-based checklist scores",
+    "narrative_role": "Main Results",
+    "axes": {
+      "x": "Assessment method",
+      "y": "Agreement / predictive accuracy metric"
+    },
+    "notes": "Use grouped bars with error bars or confidence intervals. Recommended metrics: correlation with expert scores, MAE/RMSE, and rank agreement; panel by E, S, and G dimensions if space allows. Highlight that the human benchmark is the reference standard."
+  },
+  {
+    "id": "fig3",
+    "type": "heatmap",
+    "title": "ESG Disclosure Quality Across Dimensions and Industries",
+    "caption": "Figure 3. ESG disclosure quality varies across dimensions and industries in Taiwan-listed firms.",
+    "data_source": "LLM-derived disclosure scores; firm industry classification; ESG pillar scores",
+    "narrative_role": "Comparison",
+    "axes": {
+      "x": "Industry group",
+      "y": "ESG dimension (E, S, G)"
+    },
+    "notes": "Plot mean LLM-derived disclosure quality scores by industry and ESG pillar. Use a consistent color scale and optionally annotate with sample sizes. If industry count is large, group into broader sectors to keep readability. This figure supports heterogeneity analysis."
+  },
+  {
+    "id": "fig4",
+    "type": "line",
+    "title": "Robustness of LLM-Based ESG Assessment",
+    "caption": "Figure 4. Robustness of LLM assessment across prompting strategies, report language, and document length.",
+    "data_source": "Alternative LLM prompts; subsample analyses; preprocessing variants; Chinese-only and bilingual report subsets",
+    "narrative_role": "Ablation",
+    "axes": {
+      "x": "Robustness setting / specification",
+      "y": "Performance relative to expert benchmark"
+    },
+    "notes": "Use a coefficient plot or line chart showing performance metrics across alternative prompts and data subsets. Include separate series for language type, report length bins, and prompt variants. The aim is to show stability rather than maximize visual complexity."
+  },
+  {
+    "id": "fig5",
+    "type": "scatter",
+    "title": "Firm-Level Determinants of ESG Disclosure Quality",
+    "caption": "Figure 5. Relationships between firm characteristics and LLM-derived ESG disclosure quality.",
+    "data_source": "LLM-derived disclosure scores; firm financial and governance variables; industry and year controls",
+    "narrative_role": "Mechanism",
+    "axes": {
+      "x": "Firm characteristic (e.g., environmental sensitivity, governance strength, foreign ownership)",
+      "y": "Estimated association with disclosure quality"
+    },
+    "notes": "Display regression coefficients with 95% confidence intervals for key explanatory variables. This can be a compact coefficient plot instead of a raw scatterplot. Use it to summarize the main cross-sectional explanatory findings and link disclosure quality to firm attributes."
+  }
+]
