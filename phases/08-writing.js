@@ -291,8 +291,10 @@ function fixAllTables(qmd) {
   // Also handle fences with separator rows inside
   fixed = fixed.replace(/^```(?:markdown)?\s*$/gm, '');
 
-  // Remove **tbl-colwidths:** standalone lines
-  fixed = fixed.replace(/^\*\*tbl-colwidths:\*\*\s*`[^`]+`\s*$/gm, '');
+  // Remove **tbl-colwidths:** and *tbl-colwidths:* standalone lines
+  fixed = fixed.replace(/^\*{1,2}tbl-colwidths:?\*{1,2}\s*`[^`]+`\s*$/gm, '');
+  // Remove *Caption:* standalone lines (LLM puts caption as italic text instead of Quarto format)
+  fixed = fixed.replace(/^\*Caption:?\*\s*.+$/gm, '');
 
   // Remove ::: {.cell ...} and :::: wrappers
   fixed = fixed.replace(/^:::\s*\{[^}]*\}\s*$/gm, '');
