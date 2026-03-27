@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fig1",
+    "type": "framework",
+    "title": "Standardized Framework for Quantitative Assessment of Metadata Quality across Academic Databases",
+    "caption": "This figure illustrates the conceptual framework developed to assess metadata quality, showing the defined quality dimensions (completeness, accuracy, consistency, timeliness), the quantitative metrics applied, and the workflow from data collection to statistical analysis.",
+    "data_source": "Conceptual framework developed and described in the Methodology section",
+    "narrative_role": "Framework",
+    "axes": {},
+    "notes": "Design as a clear diagram with labeled blocks representing each metadata quality dimension, corresponding metrics, the chosen databases (Web of Science, Scopus, PubMed, Google Scholar), and workflow arrows indicating stages: data collection -> preprocessing -> metric calculation -> statistical testing -> interpretation."
+  },
+  {
+    "id": "fig2",
+    "type": "bar",
+    "title": "Comparative Metadata Quality Scores Across Databases",
+    "caption": "Multi-panel bar charts depict scores of completeness, accuracy, consistency, and timeliness for each academic database, highlighting significant inter-database differences and dimension-specific disparities in metadata quality.",
+    "data_source": "Empirical metric scores collected from Web of Science, Scopus, PubMed, and Google Scholar datasets",
+    "narrative_role": "Main Results",
+    "axes": { "x": "Academic Databases", "y": "Metadata Quality Scores (0-100%)" },
+    "notes": "Create a panel for each quality dimension with bars for each database. Include error bars if confidence intervals or variability data are available. Use consistent colors for databases across panels for easy comparison. Consider adding significance markers (e.g., asterisks) for statistically significant differences."
+  },
+  {
+    "id": "fig3",
+    "type": "scatter",
+    "title": "Relationship Between Metadata Quality Dimensions and Research Discoverability Metrics",
+    "caption": "Scatter plots with fitted regression lines illustrate correlations between metadata quality dimension scores and research discoverability indicators such as coverage rates and citation linking, demonstrating the empirical impact of metadata quality on bibliometric outcomes.",
+    "data_source": "Combined metadata quality scores and discoverability indicators derived from dataset analysis",
+    "narrative_role": "Mechanism",
+    "axes": { "x": "Metadata Quality Scores", "y": "Research Discoverability Metrics" },
+    "notes": "Include separate scatter plots for each quality dimension against key discoverability metrics. Plot a regression line with confidence intervals and report correlation coefficients on the plot. Use different markers/colors for each database if feasible. Ensure axis scales are appropriate for metric distributions."
+  }
+]

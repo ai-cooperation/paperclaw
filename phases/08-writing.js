@@ -74,7 +74,7 @@ HEADING RULES:
   }
 
   // Assemble QMD
-  const qmd = assembleQMD(state, results, bib);
+  const qmd = await assembleQMD(state, results, bib);
   const qmdPath = join(state.outputDir, 'paper_draft_v0.qmd');
   await writeFile(qmdPath, qmd);
 
@@ -113,7 +113,7 @@ function extractCitekeys(bib) {
   return [...matches].map(m => m[1].trim());
 }
 
-function assembleQMD(state, sectionResults, bib) {
+async function assembleQMD(state, sectionResults, bib) {
   const frontmatter = `---
 title: "${state.topic}"
 author:
@@ -135,9 +135,41 @@ bibliography: references.bib
 
 `;
 
+  // Load tables from Phase 7
+  let tables = '';
+  try {
+    tables = await readFile(join(state.outputDir, 'tables', 'all_tables.md'), 'utf-8');
+  } catch {}
+
+  // Load figure specs to build image references
+  let figureBlocks = '';
+  try {
+    const specsRaw = await readFile(join(state.outputDir, 'figures', 'fig_specs.json'), 'utf-8');
+    const jsonMatch = specsRaw.match(/\[[\s\S]*\]/);
+    const specs = JSON.parse(jsonMatch ? jsonMatch[0] : '[]');
+    for (const spec of specs) {
+      const pngExists = await readFile(join(state.outputDir, 'figures', `${spec.id}.png`)).then(() => true).catch(() => false);
+      if (pngExists) {
+        figureBlocks += `\n![${spec.caption || spec.title}](figures/${spec.id}.png){#fig-${spec.id.replace('fig', '')} width=90%}\n\n`;
+      }
+    }
+  } catch {}
+
   const sections = SECTIONS.map((s, i) => {
     const heading = s.id === 'abstract' ? '' : `# ${s.name}\n\n`;
-    return heading + sectionResults[i];
+    let content = heading + sectionResults[i];
+
+    // Insert figures after Methodology section
+    if (s.id === 'methods' && figureBlocks) {
+      content += '\n\n' + figureBlocks;
+    }
+
+    // Insert tables before Results section content
+    if (s.id === 'results' && tables) {
+      content = heading + tables + '\n\n' + sectionResults[i];
+    }
+
+    return content;
   });
 
   return frontmatter + sections.join('\n\n') + '\n\n# References\n';

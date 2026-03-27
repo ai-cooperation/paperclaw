@@ -1,0 +1,37 @@
+## Discussion
+
+The present study set out to systematically evaluate metadata quality across four major academic databases—Web of Science, Scopus, PubMed, and Google Scholar—using a standardized framework encompassing completeness, accuracy, consistency, and timeliness. Our findings confirm the hypothesis that significant differences exist between these databases in all four dimensions, with implications for research discoverability and bibliometric reliability that merit detailed consideration.
+
+### Interpretation of Results and Comparison with Prior Work
+
+Our quantitative analysis demonstrates that Web of Science consistently achieved the highest scores in completeness, accuracy, and timeliness, with Scopus closely following. PubMed exhibited relatively strong completeness but lower scores in consistency and timeliness, while Google Scholar lagged behind all others across every dimension, especially completeness and accuracy (see Tbl 2). These disparities suggest that proprietary and curated databases like Web of Science and Scopus maintain more rigorous metadata management protocols compared to Google Scholar, which employs automated web crawling techniques prone to greater error rates.
+
+The significance of these results aligns with broader observations in bibliometric literature regarding data quality variation. For instance, Sandnes (2021) highlighted challenges in regional bibliometric studies attributable to database coverage and data inconsistencies, an issue our study extends by quantifying metadata quality differences systematically [@Sandnes2021]. Liu et al. (2020) underscored how patent data variability influences technological knowledge analyses, paralleling our emphasis on how underlying metadata quality affects downstream evaluations of scholarly outputs [@Liu2020]. Our study’s contribution lies in the methodological advance offered by a standardized, replicable framework for cross-database comparison, addressing limitations noted by prior authors about inconsistent metrics and isolated scopes.
+
+The ablation analysis further highlights the critical roles of completeness and accuracy in overall metadata quality, with exclusion of these dimensions causing the largest relative declines in composite scores (see Ablation Table). This resonates with the literature emphasizing that missing or erroneous metadata fields directly hamper discovery and citation tracking algorithms [@Sun2020]. Timeliness and consistency, while also important, appear moderately less impactful, potentially reflecting variable update frequencies and schema heterogeneity across platforms.
+
+### Implications for Research Discoverability and Bibliometric Analysis
+
+Discrepancies in metadata completeness and accuracy directly impact the ability of researchers and automated tools to locate relevant publications, correctly attribute authorship, and measure citation impact. Incomplete or inaccurate metadata can lead to underrepresentation or misclassification of scholarly works, thereby skewing bibliometric indicators such as h-index calculations, citation counts, and network analyses. Our correlation analyses (Fig 3) linking metadata dimensions with discoverability indicators reinforce that higher metadata quality facilitates richer, more accurate scholarly visibility.
+
+These findings have practical implications. Researchers relying on databases with suboptimal metadata—particularly Google Scholar in our sample—may face challenges finding pertinent literature or accurately assessing the influence of their work. Librarians and institutions employing bibliometric data for evaluation or funding decisions must recognize that underlying metadata variability can introduce biases or inconsistencies in assessments. Database providers themselves should prioritize metadata quality improvements, as small gains can substantially enhance reliability and user trust.
+
+### Recommendations for Stakeholders
+
+Given our empirical evidence, we propose several recommendations. First, researchers and evaluators should use multiple databases where feasible to mitigate the risk of relying on incomplete or erroneous metadata from a single source. Second, database providers would benefit from adopting or aligning with standardized metadata quality frameworks, fostering transparency and comparability. Automated error detection and user correction mechanisms, as partially implemented by some platforms, represent promising avenues for improving accuracy and consistency. Finally, librarians and repository managers should advocate for metadata curation best practices, including regular updates and standardized field definitions, that enhance timeliness and interoperability.
+
+### Acknowledgement of Limitations
+
+We acknowledge several limitations that may temper generalizability and interpretation of our results. First, although our sample sizes were substantial and uniformly selected across databases, they represent snapshots from a limited timeframe (January to December 2022). Databases differ in update frequencies and indexing policies, potentially affecting timeliness metrics and introducing temporal bias. Longitudinal studies would be valuable to assess metadata quality dynamics over time.
+
+Second, the accuracy dimension, while quantitatively assessed via cross-field and cross-database validation, ultimately lacks absolute ground truth. Without universal identifiers or definitive metadata registries, some extent of uncertainty remains in judging correctness, particularly for author disambiguation and affiliation data.
+
+Third, our analysis focused on four major international databases; specialized, regional, or discipline-specific repositories may present different metadata quality profiles. Extending the framework to such contexts would strengthen its utility and reveal whether observed patterns generalize broadly or reflect platform-specific idiosyncrasies.
+
+### Directions for Future Research
+
+Future research may address these limitations by incorporating temporal analyses to track metadata quality trends and volatility. Integrating richer ground-truth datasets—potentially through collaboration with publishers or author-curated repositories—could refine accuracy assessments. Exploring metadata quality in emergent or niche databases will deepen understanding of the broader scholarly ecosystem’s heterogeneity. Additionally, experimental studies could evaluate how targeted metadata improvements translate into enhanced discoverability and bibliometric validity, thereby closing the loop between data quality and real-world impact.
+
+### Conclusion
+
+In sum, this study advances the field by providing a rigorous, standardized methodology for assessing metadata quality across academic databases and empirically demonstrating significant inter-database variations. Our findings elucidate critical dependencies between metadata quality and essential scholarly functions, offering actionable insights for researchers, librarians, and database providers alike. By openly acknowledging limitations and suggesting future directions, we aim to foster trust in our results and encourage ongoing improvements in metadata stewardship—a foundational pillar for robust, equitable, and transparent research evaluation [@Sandnes2021; @Liu2020; @Sun2020].
