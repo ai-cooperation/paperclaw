@@ -11,6 +11,15 @@ import { Orchestrator } from './core/orchestrator.js';
 import { readFile } from 'fs/promises';
 import { resolve } from 'path';
 
+// Load .env file if exists
+try {
+  const envContent = await readFile(resolve('.env'), 'utf-8');
+  for (const line of envContent.split('\n')) {
+    const match = line.match(/^([^#=]+)=(.*)$/);
+    if (match) process.env[match[1].trim()] = match[2].trim();
+  }
+} catch {}
+
 const args = process.argv.slice(2);
 const command = args[0];
 
@@ -54,9 +63,10 @@ Options:
   }
 
   const config = await loadConfig();
-  const provider = getArg('provider') || config.llm?.provider || process.env.PAPERCLAW_LLM_PROVIDER || 'anthropic';
+  const provider = getArg('provider') || config.llm?.provider || process.env.PAPERCLAW_LLM_PROVIDER || 'openai';
   const model = getArg('model') || config.llm?.model;
   const apiKey = config.llm?.apiKey
+    || process.env.OPENAI_API_KEY
     || process.env.ANTHROPIC_API_KEY
     || process.env.GOOGLE_API_KEY
     || process.env.GROQ_API_KEY
@@ -111,6 +121,14 @@ Options:
     } else {
       await orchestrator.run();
     }
+
+    // Print usage
+    const { getUsage } = await import('./core/llm-adapter.js');
+    const usage = getUsage();
+    console.log(`\n--- Usage ---`);
+    console.log(`LLM calls: ${usage.totalCalls}`);
+    console.log(`Total tokens: ${usage.totalTokens}`);
+    console.log(`Estimated cost: $${usage.totalCost}`);
     return;
   }
 
