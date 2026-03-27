@@ -185,7 +185,7 @@ For "scatter" type: { "title": "...", "xlabel": "...", "ylabel": "...", "series"
       await writeFile(scriptPath, pyCode);
 
       try {
-        execSync(`python3 "${scriptPath}"`, { timeout: 30000, stdio: 'pipe' });
+        execSync(`python3 "${scriptPath}"`, { cwd: figuresDir, timeout: 30000, stdio: 'pipe' });
         console.log(`  ✓ ${spec.id}.png generated`);
       } catch (execErr) {
         console.warn(`  ✗ ${spec.id} execution failed: ${execErr.stderr?.toString().slice(-200) || execErr.message?.slice(0, 200)}`);

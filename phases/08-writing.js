@@ -35,7 +35,23 @@ export async function execute(state, llm) {
   console.log('Phase 8: Writing 7 sections in parallel...');
   const agents = SECTIONS.map(s =>
     new Agent(`writer-${s.id}`, llm, {
-      system: `You are an academic paper writer. ${s.system}\nTarget: ${s.words} words. Use formal academic English. Only cite references from the provided citekey list.`,
+      system: `You are an academic paper writer. ${s.system}
+Target: ${s.words} words. Use formal academic English.
+
+CITATION RULES (MANDATORY):
+- Cite using Quarto @citekey format: @Smith2021, [@Chen2023; @Wang2024], @Lee2020
+- ONLY use citekeys from the provided list below
+- NEVER write inline references like "(Smith, 2021)" or "Smith (2021)" — use @Smith2021
+- NEVER add a References section or bibliography at the end — Quarto handles this automatically
+- NEVER invent citations not in the citekey list
+
+MATH RULES:
+- Display equations: use $$ on separate lines (NOT \\[ \\])
+- Inline math: use $x$ (NOT \\(x\\))
+
+HEADING RULES:
+- Do NOT repeat the section name as a heading (e.g., don't write "## Introduction" if section is Introduction)
+- Use subsection headings (##) for structure within the section`,
     })
   );
 
@@ -43,7 +59,10 @@ export async function execute(state, llm) {
     `Context:\n${context}\n\nTask:\nWrite the "${s.name}" section (${s.words} words).`
   );
 
-  const results = await runParallel(agents, prompts);
+  const rawResults = await runParallel(agents, prompts);
+
+  // Post-process: clean up LLM output
+  const results = rawResults.map(text => cleanSection(text));
 
   // Save individual sections
   await mkdir(join(state.outputDir, 'sections'), { recursive: true });
@@ -62,6 +81,31 @@ export async function execute(state, llm) {
   console.log(`Phase 8: Draft written → ${qmdPath}`);
 
   return { qmdPath, sections: SECTIONS.map(s => s.id) };
+}
+
+/**
+ * Clean up LLM section output:
+ * - Remove hand-written reference lists
+ * - Fix LaTeX math delimiters
+ * - Remove duplicate headings
+ */
+function cleanSection(text) {
+  let cleaned = text;
+
+  // Remove inline reference/bibliography sections
+  cleaned = cleaned.replace(/\n---\n[\s\S]*$/m, '');
+  cleaned = cleaned.replace(/\n\*\*References:?\*\*[\s\S]*$/mi, '');
+  cleaned = cleaned.replace(/\n#{1,3}\s*References[\s\S]*$/mi, '');
+  cleaned = cleaned.replace(/\n- [A-Z][a-z]+,\s[A-Z]\.\s.*?\(\d{4}\)\..*$/gm, '');
+
+  // Fix LaTeX: \[ \] → $$, \( \) → $
+  cleaned = cleaned.replace(/\\\[/g, '$$').replace(/\\\]/g, '$$');
+  cleaned = cleaned.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+
+  // Remove markdown fences if LLM wrapped output
+  cleaned = cleaned.replace(/^```markdown\n?/m, '').replace(/^```\n?$/m, '');
+
+  return cleaned.trim();
 }
 
 function extractCitekeys(bib) {

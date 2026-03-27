@@ -10,6 +10,44 @@ import { join } from 'path';
 const MAX_ROUNDS = 3;
 const PASS_THRESHOLD = 80;
 
+/**
+ * Parse score from review output. Tries multiple patterns.
+ */
+function parseScore(text) {
+  const patterns = [
+    /\*\*TOTAL\*\*\s*\|\s*\*\*(\d+)\*\*/i,           // | **TOTAL** | **72** |
+    /TOTAL[:\s|]*(\d+)\s*(?:\/\s*100)?/i,             // TOTAL: 72/100
+    /(?:total|overall)\s*(?:score)?[:\s]*(\d+)\s*(?:\/\s*100|out of 100)/i,  // Total score: 72/100
+    /(\d+)\s*\/\s*100/g,                               // any XX/100 — take last match
+  ];
+
+  for (const pat of patterns) {
+    if (pat.global) {
+      const matches = [...text.matchAll(pat)];
+      if (matches.length > 0) {
+        const val = parseInt(matches[matches.length - 1][1]);
+        if (val > 0 && val <= 100) return val;
+      }
+    } else {
+      const m = text.match(pat);
+      if (m) {
+        const val = parseInt(m[1]);
+        if (val > 0 && val <= 100) return val;
+      }
+    }
+  }
+
+  // Fallback: sum all dimension scores from table rows
+  const rowPattern = /\|\s*\d+\s*\|/g;
+  const nums = [...text.matchAll(/\|\s*(\d+)\s*\|\s*(\d+)\s*\|/g)];
+  if (nums.length >= 5) {
+    const sum = nums.reduce((acc, m) => acc + parseInt(m[1]), 0);
+    if (sum > 0 && sum <= 100) return sum;
+  }
+
+  return 0;
+}
+
 const REVIEW_SYSTEM = `You are a senior journal reviewer. Evaluate this paper draft on 7 dimensions.
 Score each dimension and provide specific feedback.
 
@@ -23,13 +61,26 @@ Score each dimension and provide specific feedback.
 | Contribution Differentiation | 5% | 5 |
 | Figure/Table Quality | 5% | 5 |
 
-Output format:
-1. Score table (dimension | score | max | status | issue)
-2. Total score out of 100
-3. List of issues classified as P0 (fatal), P1 (important), P2 (minor)
-4. For each issue: location, current text, problem, suggested fix
+You MUST output in this EXACT format:
 
-Be critical but fair. This should match Q1 journal standards.`;
+## Scores
+| Dimension | Score | Max |
+|-----------|-------|-----|
+| Research Gap Clarity | X | 20 |
+| Methodology Rigor | X | 25 |
+| Results Significance | X | 20 |
+| Writing Quality | X | 15 |
+| Citation Accuracy | X | 10 |
+| Contribution Differentiation | X | 5 |
+| Figure/Table Quality | X | 5 |
+| **TOTAL** | **X** | **100** |
+
+## Issues
+- [P0] ...
+- [P1] ...
+- [P2] ...
+
+Be critical but fair. Match Q1 journal standards.`;
 
 const FIX_SYSTEM = `You are a paper revision specialist. Given a review report with specific issues, fix the paper draft.
 Rules:
@@ -60,10 +111,9 @@ export async function execute(state, llm) {
       `Paper draft:\n${draft}\n\nReferences (.bib):\n${bib}\n\nReview this paper. Be specific about issues.`
     );
 
-    // Parse score
-    const scoreMatch = review.match(/(?:total|overall)[:\s]*(\d+)\s*(?:\/\s*100|out of 100)/i);
-    const score = scoreMatch ? parseInt(scoreMatch[1]) : 0;
-    const hasP0 = /\bP0\b/.test(review);
+    // Parse score — try multiple patterns
+    const score = parseScore(review);
+    const hasP0 = /\bP0\b/i.test(review) || /\bfatal\b/i.test(review);
 
     logEntries.push(
       `## Round ${currentRound} — ${new Date().toISOString().slice(0, 16)}`,
