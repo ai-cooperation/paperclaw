@@ -6,7 +6,7 @@
 
 import { Agent, runParallel } from '../core/agent.js';
 import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { execSync } from 'child_process';
 
 const TABLE_SYSTEM = `You are a results table specialist. Generate publication-ready markdown tables from experiment results. Rules:
@@ -135,7 +135,7 @@ export async function execute(state, llm) {
     specs = [];
   }
 
-  const figuresDir = join(state.outputDir, 'figures');
+  const figuresDir = resolve(state.outputDir, 'figures');
 
   // Step 2a: Use templates for known figure types, LLM for custom ones
   const templateAgent = new Agent('figure-data-filler', llm, {

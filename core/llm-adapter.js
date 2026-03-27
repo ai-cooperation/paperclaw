@@ -63,14 +63,29 @@ function createOpenAIAdapter(model, apiKey) {
         max_tokens: options.maxTokens || 4096,
       };
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify(body),
-      });
+      // Retry up to 3 times on timeout/network errors
+      let res;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${apiKey}`,
+            },
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(60000), // 60s timeout
+          });
+          break;
+        } catch (fetchErr) {
+          if (attempt < 2) {
+            console.warn(`OpenAI fetch failed (attempt ${attempt + 1}), retrying in 5s...`);
+            await new Promise(r => setTimeout(r, 5000));
+          } else {
+            throw fetchErr;
+          }
+        }
+      }
 
       if (!res.ok) {
         const err = await res.text();
