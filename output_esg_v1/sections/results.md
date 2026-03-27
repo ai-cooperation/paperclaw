@@ -1,0 +1,7 @@
+## Results
+
+### Experimental Setup
+
+To evaluate the efficacy of our large language model (LLM)-based framework in assessing Environmental, Social, and Governance (ESG) disclosures of Taiwan-listed companies, we conducted quantitative experiments comparing the LLM-assisted assessments against traditional manual evaluations by experienced ESG analysts. Our dataset comprises 450 ESG reports from 100 publicly listed Taiwanese companies spanning 2021 to 2023, covering the Finance, Manufacturing, and Technology sectors, as summarized in @tbl-1. The LLM model used is a customized version fine-tuned on Taiwan’s ESG-specific corpora, incorporating local language adaptations and sector-specific lexicons.
+
+Three key dimensions were measured for performance benchmarking: **accuracy**, reflecting the alignment of ESG scoring with a gold standard consensus; **consistency**, based on intra- and inter-rater reliability metrics; and **timeliness**, denoting the speed of obtaining an ESG evaluation. Statistical tests, primarily paired t-tests and Wilcoxon signed-rank tests, were applied to assess significance of differences between methods, with effect sizes also examined to characterize practical impact.

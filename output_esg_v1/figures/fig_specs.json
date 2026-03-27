@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fig1",
+    "type": "framework",
+    "title": "Overview of the LLM-based ESG Disclosure Assessment Framework for Taiwan-listed Companies",
+    "caption": "This figure illustrates the architecture and workflow of the proposed LLM-assisted ESG disclosure assessment system, highlighting customization for Taiwan-specific language, integration of sector-specific lexicons, and the comparative assessment process with manual analyst evaluations.",
+    "data_source": "Methodology section - Developed framework components and workflow diagrams",
+    "narrative_role": "Framework",
+    "axes": {},
+    "notes": "Use a layered flowchart or pipeline diagram showing data input (ESG reports), preprocessing, LLM fine-tuning modules, lexicon integration, assessment engine, and output comparison modules. Emphasize adaptation to local language and domain specifics."
+  },
+  {
+    "id": "fig2",
+    "type": "bar",
+    "title": "Comparison of Accuracy, Consistency, and Timeliness Metrics Between LLM-assisted and Manual ESG Assessments",
+    "caption": "Bar charts comparing performance metrics—accuracy, consistency, and timeliness—of ESG assessments conducted by the proposed LLM-assisted method versus traditional manual analyst evaluations across the full dataset and broken down by Environmental, Social, and Governance dimensions.",
+    "data_source": "Results section – Quantitative experimental evaluation results",
+    "narrative_role": "Main Results",
+    "axes": { "x": "Assessment Method (Manual, LLM-assisted)", "y": "Performance Metric Value (%)" },
+    "notes": "Prepare grouped bar charts for each metric and ESG dimension side by side. Include error bars or statistical significance markers if available."
+  },
+  {
+    "id": "fig3",
+    "type": "heatmap",
+    "title": "Examples of LLM and Analyst Assessment Discrepancies on Sector-Specific ESG Disclosure Elements",
+    "caption": "Heatmap visualizing where LLM assessments diverge from manual analysts on ESG disclosure elements categorized by sector. Highlights ESG elements with highest agreement and those with notable discrepancies to illustrate strengths and limitations of the LLM approach.",
+    "data_source": "Results section – Selected company reports and comparative assessment outputs",
+    "narrative_role": "Comparison / Mechanism",
+    "axes": { "x": "ESG Disclosure Elements", "y": "Sectors of Taiwan-listed Companies" },
+    "notes": "Color intensity indicating degree of agreement vs. discrepancy between LLM and human assessments. Annotations can highlight case study examples."
+  }
+]

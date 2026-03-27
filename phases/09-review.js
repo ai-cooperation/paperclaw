@@ -113,7 +113,8 @@ export async function execute(state, llm) {
 
     // Parse score — try multiple patterns
     const score = parseScore(review);
-    const hasP0 = /\bP0\b/i.test(review) || /\bfatal\b/i.test(review);
+    // Check for actual P0 issues (not just mention of "P0")
+    const hasP0 = /\[P0\]/.test(review) || /P0[:\s]+(fatal|critical|must)/i.test(review);
 
     logEntries.push(
       `## Round ${currentRound} — ${new Date().toISOString().slice(0, 16)}`,

@@ -29,7 +29,8 @@ export async function execute(state, llm) {
     tables = await readFile(join(state.outputDir, 'tables', 'all_tables.md'), 'utf-8');
   } catch { tables = ''; }
 
-  const context = `CONCEPT:\n${concept}\n\nPOSITIONING:\n${positioning}\n\nSTRUCTURE:\n${structure}\n\nTABLES:\n${tables}\n\nAVAILABLE CITEKEYS (from .bib):\n${extractCitekeys(bib).join(', ')}`;
+  const citekeys = extractCitekeys(bib);
+  const context = `CONCEPT:\n${concept}\n\nPOSITIONING:\n${positioning}\n\nSTRUCTURE:\n${structure}\n\nTABLES:\n${tables}\n\n=== AVAILABLE CITEKEYS (YOU MUST USE THESE — at least 20 total across all sections) ===\n${citekeys.map(k => `@${k}`).join('\n')}\n=== END CITEKEYS (${citekeys.length} available) ===`;
 
   // Write sections in parallel
   console.log('Phase 8: Writing 7 sections in parallel...');
@@ -38,19 +39,30 @@ export async function execute(state, llm) {
       system: `You are an academic paper writer. ${s.system}
 Target: ${s.words} words. Use formal academic English.
 
-CITATION RULES (MANDATORY):
+CITATION RULES (MANDATORY — HARD REQUIREMENT):
 - Cite using Quarto @citekey format: @Smith2021, [@Chen2023; @Wang2024], @Lee2020
-- ONLY use citekeys from the provided list below
-- NEVER write inline references like "(Smith, 2021)" or "Smith (2021)" — use @Smith2021
-- NEVER add a References section or bibliography at the end — Quarto handles this automatically
+- ONLY use citekeys from the PROVIDED CITEKEY LIST
+- You MUST cite at least 5 different citekeys in each major section (Introduction, Related Work, Discussion)
+- NEVER write inline references like "(Smith, 2021)" or "Smith (2021)" — ALWAYS use @citekey
+- NEVER add a References section or bibliography at the end — Quarto handles this
 - NEVER invent citations not in the citekey list
+
+TABLE RULES (MANDATORY):
+- Tables use standard markdown pipe format
+- Caption goes BELOW the table as ": Caption text {#tbl-label}"
+- Do NOT put tbl-colwidths inside the table — put it in the Quarto attribute: {#tbl-label tbl-colwidths="[20,20,20,20,20]"}
+- Example:
+  | Col1 | Col2 | Col3 |
+  |------|------|------|
+  | val  | val  | val  |
+  : My table caption {#tbl-main tbl-colwidths="[33,33,34]"}
 
 MATH RULES:
 - Display equations: use $$ on separate lines (NOT \\[ \\])
 - Inline math: use $x$ (NOT \\(x\\))
 
 HEADING RULES:
-- Do NOT repeat the section name as a heading (e.g., don't write "## Introduction" if section is Introduction)
+- Do NOT repeat the section name as a heading
 - Use subsection headings (##) for structure within the section`,
     })
   );
@@ -80,7 +92,32 @@ HEADING RULES:
 
   console.log(`Phase 8: Draft written → ${qmdPath}`);
 
-  return { qmdPath, sections: SECTIONS.map(s => s.id) };
+  // Hard requirement checks
+  const qmdContent = qmd;
+  const usedCitekeys = [...new Set((qmdContent.match(/@[A-Za-z][A-Za-z0-9]+/g) || [])
+    .filter(c => !c.match(/^@(fig|tbl|eq|sec)/)))];
+  const tableCount = (qmdContent.match(/^: .+\{#tbl-/gm) || []).length;
+
+  let figCount = 0;
+  try {
+    const specs = await readFile(join(state.outputDir, 'figures', 'fig_specs.json'), 'utf-8');
+    const jsonMatch = specs.match(/\[[\s\S]*\]/);
+    figCount = JSON.parse(jsonMatch ? jsonMatch[0] : '[]').length;
+  } catch {}
+
+  const warnings = [];
+  if (usedCitekeys.length < 20) warnings.push(`Citations: ${usedCitekeys.length}/20 (need ≥20)`);
+  if (figCount < 4) warnings.push(`Figures: ${figCount}/4 (need ≥4)`);
+  if (tableCount < 4) warnings.push(`Tables: ${tableCount}/4 (need ≥4)`);
+
+  if (warnings.length > 0) {
+    console.warn('Phase 8: HARD REQUIREMENT WARNINGS:');
+    warnings.forEach(w => console.warn(`  ⚠ ${w}`));
+  } else {
+    console.log('Phase 8: All hard requirements met ✓');
+  }
+
+  return { qmdPath, sections: SECTIONS.map(s => s.id), citations: usedCitekeys.length, figures: figCount, tables: tableCount, warnings };
 }
 
 /**
