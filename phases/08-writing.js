@@ -71,7 +71,13 @@ HEADING RULES:
     `Context:\n${context}\n\nTask:\nWrite the "${s.name}" section (${s.words} words).`
   );
 
-  const rawResults = await runParallel(agents, prompts);
+  // Write sections sequentially to avoid network overload
+  const rawResults = [];
+  for (let i = 0; i < agents.length; i++) {
+    console.log(`  [${i+1}/${agents.length}] Writing ${SECTIONS[i].id}...`);
+    const result = await agents[i].run(prompts[i]);
+    rawResults.push(result);
+  }
 
   // Post-process: clean up LLM output
   const results = rawResults.map(text => cleanSection(text));

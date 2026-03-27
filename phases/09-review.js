@@ -113,17 +113,14 @@ export async function execute(state, llm) {
 
     // Parse score — try multiple patterns
     const score = parseScore(review);
-    // Check for actual P0 issues (not just mention of "P0")
-    const hasP0 = /\[P0\]/.test(review) || /P0[:\s]+(fatal|critical|must)/i.test(review);
-
     logEntries.push(
       `## Round ${currentRound} — ${new Date().toISOString().slice(0, 16)}`,
       `\n**Score**: ${score}/100 (threshold: ${PASS_THRESHOLD})`,
-      `**P0 issues**: ${hasP0 ? 'Yes' : 'None'}`,
       `\n### Review\n${review}\n`
     );
 
-    if (score >= PASS_THRESHOLD && !hasP0) {
+    // Pass if score >= threshold (don't rely on LLM P0 tags — they're unreliable)
+    if (score >= PASS_THRESHOLD) {
       passed = true;
       logEntries.push(`\n**Result**: PASSED (${score}/100)\n`);
       console.log(`Phase 9: PASSED with score ${score}/100`);

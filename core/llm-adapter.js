@@ -63,9 +63,9 @@ function createOpenAIAdapter(model, apiKey) {
         max_tokens: options.maxTokens || 4096,
       };
 
-      // Retry up to 3 times on timeout/network errors
+      // Retry up to 5 times with increasing delay
       let res;
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 5; attempt++) {
         try {
           res = await fetch(url, {
             method: 'POST',
@@ -74,13 +74,14 @@ function createOpenAIAdapter(model, apiKey) {
               'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify(body),
-            signal: AbortSignal.timeout(60000), // 60s timeout
+            signal: AbortSignal.timeout(120000), // 120s timeout
           });
           break;
         } catch (fetchErr) {
-          if (attempt < 2) {
-            console.warn(`OpenAI fetch failed (attempt ${attempt + 1}), retrying in 5s...`);
-            await new Promise(r => setTimeout(r, 5000));
+          const delay = (attempt + 1) * 5000; // 5s, 10s, 15s, 20s, 25s
+          if (attempt < 4) {
+            console.warn(`OpenAI fetch failed (attempt ${attempt + 1}/5), retrying in ${delay/1000}s...`);
+            await new Promise(r => setTimeout(r, delay));
           } else {
             throw fetchErr;
           }
