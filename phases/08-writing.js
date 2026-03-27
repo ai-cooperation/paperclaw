@@ -176,15 +176,30 @@ function cleanSection(text) {
     return `tbl-colwidths="[${fixed.split(/[\s,]+/).filter(Boolean).join(',')}]"`;
   });
 
-  // Auto-label tables that have pipe format but no {#tbl-} label
-  // Find pattern: table rows followed by no label → add one
+  // Fix tables: extract title from first cell, convert to Quarto caption
+  // Pattern: | **Table N: Title** | ... | followed by separator and data rows
+  cleaned = cleaned.replace(
+    /\|\s*\*\*Table\s*(\d+)[:\s]*([^*]*)\*\*\s*\|[^\n]*\n(\|[-:| ]+\|(?:\n\|.+\|)*)/gm,
+    (match, num, title, rest) => {
+      tableCounter++;
+      const labels = ['dataset', 'main', 'ablation', 'comparison', 'summary', 'config'];
+      const label = labels[tableCounter - 1] || `t${tableCounter}`;
+      const caption = title.trim() || `Table ${num}`;
+      // Return just the data rows (without title row) + Quarto caption below
+      return `${rest}\n\n: ${caption} {#tbl-${label} tbl-colwidths="[25,25,25,25]"}\n`;
+    }
+  );
+
+  // Fallback: any table block without #tbl- label gets one
   cleaned = cleaned.replace(
     /(\|[-:| ]+\|(?:\n\|.+\|)+)\n(?!\s*:)/gm,
     (match) => {
+      // Check if this table already has a label nearby
+      if (match.includes('#tbl-')) return match;
       tableCounter++;
-      const labels = ['main', 'comparison', 'ablation', 'dataset', 'summary', 'config'];
+      const labels = ['dataset', 'main', 'ablation', 'comparison', 'summary', 'config'];
       const label = labels[tableCounter - 1] || `t${tableCounter}`;
-      return `${match}\n: Table ${tableCounter} {#tbl-${label} tbl-colwidths="[20,20,20,20,20]"}\n`;
+      return `${match}\n: Table {#tbl-${label} tbl-colwidths="[25,25,25,25]"}\n`;
     }
   );
 

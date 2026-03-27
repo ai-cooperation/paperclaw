@@ -244,8 +244,10 @@ export async function execute(state, llm) {
 
     // Fix
     console.log(`Phase 9: Score ${score}/100, fixing issues...`);
+    // Truncate draft to avoid exceeding API body size limits
+    const truncatedDraft = draft.length > 15000 ? draft.slice(0, 15000) + '\n\n[... truncated for API limits ...]' : draft;
     const fixResult = await fixAgent.run(
-      `Review report:\n${review}\n\nCurrent draft:\n${draft}\n\nFix all P0 and P1 issues. Output the complete revised paper.`
+      `Review report:\n${review.slice(0, 3000)}\n\nCurrent draft (may be truncated):\n${truncatedDraft}\n\nFix the issues identified in the review. Output the revised paper.`
     );
 
     // Save new version

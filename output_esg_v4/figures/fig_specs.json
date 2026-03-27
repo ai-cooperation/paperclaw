@@ -1,0 +1,32 @@
+[
+  {
+    "id": "fig1",
+    "type": "framework",
+    "title": "The proposed LLM-assisted ESG disclosure assessment framework",
+    "caption": "The proposed LLM-assisted ESG disclosure assessment framework integrating bilingual model fine-tuning, bias correction, and multi-method benchmarking. This diagram illustrates the workflow from data preprocessing of Mandarin-English ESG reports, through LLM fine-tuning and assessment, to comparative evaluation with manual and rule-based methods.",
+    "data_source": "Model design and system architecture",
+    "narrative_role": "Framework",
+    "axes": { "x": "Process Steps", "y": "Components / Modules" },
+    "notes": "Use a layered flowchart or pipeline style diagram, showing major stages: Data Collection, Preprocessing, Bilingual Fine-tuned LLM Model, Bias Correction Module, Benchmarking Components (Manual, Rule-based, LLM), and Evaluation Metrics. Arrows to indicate data flow, include icons or blocks for components, color-code bilingual vs monolingual elements, and highlight bias correction block."
+  },
+  {
+    "id": "fig2",
+    "type": "bar",
+    "title": "Comparison of Accuracy, Consistency, and Efficiency across assessment methods",
+    "caption": "Comparison of accuracy (%), inter-rater reliability (Cohen's Kappa), and efficiency (average processing time per report in seconds) among LLM-assisted, manual, and rule-based ESG disclosure assessment methods on the Taiwan dataset.",
+    "data_source": "Performance metrics from experimental benchmarking",
+    "narrative_role": "Main Results",
+    "axes": { "x": "Assessment Method", "y": "Metric Values" },
+    "notes": "Create grouped bar charts or side-by-side bars per metric category for each method. Use consistent colors for methods across metrics. Add numerical value labels above bars. Consider plotting efficiency separately or using a secondary y-axis if needed due to scale differences."
+  },
+  {
+    "id": "fig3",
+    "type": "bar",
+    "title": "Impact of Bias Correction on LLM Model Performance and Robustness",
+    "caption": "Impact of applying bias correction techniques on LLM-based ESG disclosure assessment, showing improvements in accuracy and consistency with bias mitigation compared to raw model outputs.",
+    "data_source": "Results comparing LLM assessments with and without bias correction",
+    "narrative_role": "Ablation",
+    "axes": { "x": "Model Condition", "y": "Performance Metrics" },
+    "notes": "Use paired bars to represent LLM with and without bias correction for each metric (accuracy, consistency). Include error bars or confidence intervals if available. Highlight improvements and indicate statistical significance where applicable."
+  }
+]
