@@ -100,27 +100,39 @@ paperclaw/
 
 ## PaperClaw Pro
 
-PaperClaw is fully functional as an open-source tool. For researchers targeting Q1/SCI journals who need higher acceptance rates, **PaperClaw Pro** provides advanced capabilities:
+PaperClaw is fully functional as an open-source tool. For researchers targeting top-tier journals who need higher acceptance rates, **PaperClaw Pro** provides advanced review and positioning capabilities built on real journal submission experience.
+
+### Open Source vs Pro
 
 | Capability | Open Source | Pro |
 |------------|:---:|:---:|
-| 11-Phase pipeline | ✅ | ✅ |
-| DOI triple-verification | ✅ | ✅ |
-| 7-dimension review (score-based) | ✅ | ✅ |
-| MVP gate check (P0/P1/P2 audit) | ✅ | ✅ |
+| 11-Phase pipeline (concept → submission) | ✅ | ✅ |
+| DOI triple-verification (CrossRef + OpenAlex + S2) | ✅ | ✅ |
+| BibTeX management and validation | ✅ | ✅ |
+| Academic writing rules + QMD formatting | ✅ | ✅ |
+| MVP gate check with quality audit | ✅ | ✅ |
+| 7-dimension review (score-based, pass at 80) | ✅ | ✅ |
 | Journal scope matching | ✅ | ✅ |
-| Figure templates | ✅ | ✅ |
-| **Elite Reviewer Audit** — 12-dimension deep review with 3 simulated reviewers, rejection risk matrix | | ✅ |
-| **Paper Review Skill** — 7-dimension scoring with P0/P1/P2 issue classification and prioritized fix plan | | ✅ |
-| **Innovation Positioning** — Strategy to avoid "application research" framing, independent novelty narrative | | ✅ |
-| **Multi-LLM Peer Review** — Cross-model review (GPT + Gemini + Claude) for diverse perspectives | | ✅ |
-| **Research Landscape** — Auto-generate 9 types of knowledge graphs + Obsidian integration | | ✅ |
-| **Editor preference analysis** — EiC background research, associate editor matching | | ✅ |
-| **1-on-1 consulting** — Expert review of your specific paper | | ✅ |
+| Figure templates (matplotlib) | ✅ | ✅ |
+| Journal templates (Elsevier, Springer) | ✅ | ✅ |
+| **Elite Reviewer Audit** — 12-dimension deep review, 3 simulated reviewers, rejection risk matrix | | ✅ |
+| **Advanced Issue Triage** — P0/P1/P2 classification with prioritized fix plan | | ✅ |
+| **Innovation Positioning** — Novelty narrative strategy, avoid "application research" framing | | ✅ |
+| **Multi-LLM Peer Review** — Cross-model review (GPT + Gemini + Claude) | | ✅ |
+| **Research Landscape** — 9 types of knowledge graphs + Obsidian integration | | ✅ |
+| **Editor Preference Analysis** — EiC background, associate editor matching | | ✅ |
+| **1-on-1 Consulting** — Expert review of your specific paper | | ✅ |
 
-**Pro is a service, not a fork.** The open-source codebase is complete and unrestricted (MIT). Pro adds expert-crafted prompts and human consulting on top.
+### How it works
 
-Contact: [paperlab@cooperation.tw](mailto:paperlab@cooperation.tw) | [paperlab.cooperation.tw](https://paperlab.cooperation.tw)
+**Pro is a service, not a fork.** The open-source codebase is complete and unrestricted under MIT license. You can build your own advanced features on top of PaperClaw — many of the Pro capabilities are achievable with well-crafted prompts and domain expertise.
+
+Pro provides battle-tested prompt engineering refined through real journal submissions, plus human expert consulting for researchers who want professional guidance.
+
+### Contact
+
+- Email: [paperlab@cooperation.tw](mailto:paperlab@cooperation.tw)
+- Website: [paperlab.cooperation.tw](https://paperlab.cooperation.tw)
 
 ---
 
