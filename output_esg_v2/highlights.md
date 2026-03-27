@@ -1,0 +1,5 @@
+- LLM-assisted assessments improved ESG accuracy by 7 percentage points for Taiwan firms.  
+- Fleiss’ Kappa rose from 0.60 to 0.74, showing enhanced consistency with LLM use.  
+- ESG assessment time decreased by 52% when using the LLM-assisted framework.  
+- Fine-tuning on Taiwan-specific ESG data was critical for high-performing LLM results.  
+- Bilingual Mandarin-English ESG disclosures were effectively analyzed via the LLM model.

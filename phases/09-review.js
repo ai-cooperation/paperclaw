@@ -7,8 +7,95 @@ import { Agent } from '../core/agent.js';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 
+import { existsSync, readdirSync } from 'fs';
+
 const MAX_ROUNDS = 3;
 const PASS_THRESHOLD = 80;
+
+/**
+ * MVP Gate Check — 8 universal gates (adapted from mvp-gatekeeper skill).
+ * Returns array of { name, pass, detail }.
+ */
+function runGateCheck(draft, bib, outputDir) {
+  const gates = [];
+
+  // G1: Citation count >= 20
+  const citekeys = [...new Set((draft.match(/@[A-Za-z][A-Za-z0-9]+/g) || [])
+    .filter(c => !c.match(/^@(fig|tbl|eq|sec)/)))];
+  gates.push({
+    name: 'G1: Citations ≥ 20',
+    pass: citekeys.length >= 20,
+    detail: `${citekeys.length} unique citekeys in text`,
+  });
+
+  // G2: Bib entries match citations (no orphan citekeys)
+  const bibKeys = [...bib.matchAll(/@\w+\{([^,]+),/g)].map(m => '@' + m[1].trim());
+  const orphans = citekeys.filter(c => !bibKeys.includes(c));
+  gates.push({
+    name: 'G2: No orphan citations',
+    pass: orphans.length === 0,
+    detail: orphans.length === 0 ? 'All citekeys exist in .bib' : `Missing: ${orphans.slice(0, 5).join(', ')}`,
+  });
+
+  // G3: Figures >= 4
+  let figCount = 0;
+  try {
+    const figDir = join(outputDir, 'figures');
+    if (existsSync(figDir)) {
+      figCount = readdirSync(figDir).filter(f => f.endsWith('.png') && f.startsWith('fig')).length;
+    }
+  } catch {}
+  gates.push({
+    name: 'G3: Figures ≥ 4',
+    pass: figCount >= 4,
+    detail: `${figCount} figures found`,
+  });
+
+  // G4: Tables >= 4
+  const tableCount = (draft.match(/^: .+\{#tbl-/gm) || []).length;
+  gates.push({
+    name: 'G4: Tables ≥ 4',
+    pass: tableCount >= 4,
+    detail: `${tableCount} tables with #tbl- labels`,
+  });
+
+  // G5: Abstract exists and within word limit
+  const abstractMatch = draft.match(/\*\*Abstract\.?\*\*[\s\S]*?(?=\n#\s)/);
+  const abstractWords = abstractMatch ? abstractMatch[0].split(/\s+/).length : 0;
+  gates.push({
+    name: 'G5: Abstract 150-300 words',
+    pass: abstractWords >= 150 && abstractWords <= 300,
+    detail: `${abstractWords} words`,
+  });
+
+  // G6: No LaTeX errors (basic check)
+  const badMath = (draft.match(/\\\[|\\\]|\\\(|\\\)/g) || []).length;
+  gates.push({
+    name: 'G6: No raw LaTeX math',
+    pass: badMath === 0,
+    detail: badMath === 0 ? 'All math uses $$ and $' : `${badMath} raw LaTeX delimiters found`,
+  });
+
+  // G7: No inline reference lists
+  const inlineRefs = /\n\*\*References:?\*\*/mi.test(draft) || /\n#{1,3}\s*References\s*\n(?!\s*$)/mi.test(draft);
+  gates.push({
+    name: 'G7: No inline reference list',
+    pass: !inlineRefs,
+    detail: inlineRefs ? 'Found hand-written reference list in text' : 'Clean — Quarto handles references',
+  });
+
+  // G8: Bib quality (DOI coverage)
+  const bibEntries = [...bib.matchAll(/@\w+\{/g)].length;
+  const doiCount = [...bib.matchAll(/doi\s*=\s*\{/gi)].length;
+  const doiPct = bibEntries > 0 ? Math.round(doiCount / bibEntries * 100) : 0;
+  gates.push({
+    name: 'G8: Bib DOI coverage ≥ 80%',
+    pass: doiPct >= 80,
+    detail: `${doiCount}/${bibEntries} entries have DOI (${doiPct}%)`,
+  });
+
+  return gates;
+}
 
 /**
  * Parse score from review output. Tries multiple patterns.
@@ -97,6 +184,24 @@ export async function execute(state, llm) {
   let logEntries = ['# Quality Review Log\n'];
   let currentRound = 0;
   let passed = false;
+
+  // === MVP Gate Check (mvp-gatekeeper skill — 8 universal gates) ===
+  console.log('Phase 9: Running MVP gate check...');
+  const draft0 = await readFile(qmdPath, 'utf-8');
+  const bib0 = await readFile(join(state.outputDir, 'references.bib'), 'utf-8');
+
+  const gates = runGateCheck(draft0, bib0, state.outputDir);
+  logEntries.push('## MVP Gate Check\n');
+  logEntries.push('| Gate | Status | Detail |');
+  logEntries.push('|------|--------|--------|');
+  let gateFailCount = 0;
+  for (const g of gates) {
+    const icon = g.pass ? '✅' : '❌';
+    logEntries.push(`| ${g.name} | ${icon} | ${g.detail} |`);
+    if (!g.pass) gateFailCount++;
+    console.log(`  ${icon} ${g.name}: ${g.detail}`);
+  }
+  logEntries.push(`\n**Gates passed**: ${gates.length - gateFailCount}/${gates.length}\n`);
 
   while (currentRound < MAX_ROUNDS && !passed) {
     currentRound++;

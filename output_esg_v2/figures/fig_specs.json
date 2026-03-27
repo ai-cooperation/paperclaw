@@ -1,0 +1,38 @@
+[
+  {
+    "id": "fig1",
+    "type": "framework",
+    "title": "Architecture of LLM-Assisted ESG Disclosure Assessment Framework",
+    "caption": "Schematic overview illustrating the technical workflow of the proposed LLM-assisted ESG assessment system, including multilingual ESG document input, Taiwan-specific fine-tuning of the multilingual baseline model, expert human evaluation integration, and quantitative evaluation pipeline.",
+    "data_source": "Constructed schematic based on methodology section detailing model and evaluation pipeline",
+    "narrative_role": "Framework",
+    "axes": {},
+    "notes": "Diagram should visually represent the input data flow (Mandarin, English), fine-tuning steps, model inference, comparison with human expert assessments, and output metrics. Use clear icons for LLM, datasets, evaluation, and bilingual inputs."
+  },
+  {
+    "id": "fig2",
+    "type": "bar",
+    "title": "Comparison of LLM-Assisted and Human Expert ESG Assessment Performance",
+    "caption": "Bar charts comparing accuracy, inter-rater reliability (Fleiss’ Kappa), and average processing time for ESG disclosure evaluations by LLM-assisted methods versus traditional human-only approaches on Taiwan-listed companies.",
+    "data_source": "Empirical evaluation results from experiments comparing LLM-assisted and human assessments",
+    "narrative_role": "Main Results",
+    "axes": {
+      "x": "Assessment Method (Human, LLM-Assisted)",
+      "y": "Metric Value (Accuracy %, Fleiss’ Kappa, Processing Time in Hours)"
+    },
+    "notes": "Include three grouped bar charts side-by-side or stacked for the three metrics. Use consistent color coding for human and LLM. Add error bars if statistical significance data available."
+  },
+  {
+    "id": "fig3",
+    "type": "bar",
+    "title": "Error Type Analysis in ESG Assessment: Discrepancies between LLM and Human Evaluations",
+    "caption": "Breakdown of common error categories observed in ESG assessment discrepancies, highlighting challenges arising from bilingual disclosures and domain-specific language, with example illustrative cases.",
+    "data_source": "Evaluation data highlighting discrepancies between human and LLM assessments focusing on error typology",
+    "narrative_role": "Ablation",
+    "axes": {
+      "x": "Error Type (e.g., Misclassification, Language Ambiguity, Regulatory Term Confusion, Missing Context)",
+      "y": "Frequency of Occurrence"
+    },
+    "notes": "Use a bar chart to depict frequency counts of different error categories. Include textual callouts or small insets showing sample bilingual text excerpts causing errors."
+  }
+]

@@ -37,33 +37,49 @@ export async function execute(state, llm) {
   const agents = SECTIONS.map(s =>
     new Agent(`writer-${s.id}`, llm, {
       system: `You are an academic paper writer. ${s.system}
-Target: ${s.words} words. Use formal academic English.
+Target: ${s.words} words.
 
-CITATION RULES (MANDATORY — HARD REQUIREMENT):
-- Cite using Quarto @citekey format: @Smith2021, [@Chen2023; @Wang2024], @Lee2020
-- ONLY use citekeys from the PROVIDED CITEKEY LIST
-- You MUST cite at least 5 different citekeys in each major section (Introduction, Related Work, Discussion)
-- NEVER write inline references like "(Smith, 2021)" or "Smith (2021)" — ALWAYS use @citekey
-- NEVER add a References section or bibliography at the end — Quarto handles this
-- NEVER invent citations not in the citekey list
+=== ACADEMIC WRITING RULES (academic-writing skill) ===
+- Use formal academic English, passive voice preferred
+- NEVER use first person ("we propose") — use "This study proposes" or "The results indicate"
+- Avoid colloquial words: "a lot of" → "numerous", "get" → "obtain", "show" → "demonstrate", "use" → "employ"
+- Avoid vague words: "very good" → "superior", "recently" → "since 2020", "significantly" → "statistically significant (p < 0.05)"
+- Tense: past tense for your methods/results, present tense for established facts and figure/table descriptions
+- Articles: "In Section 3" (no "the"), "Figure 1 shows" (no "The")
+- Every claim needs a citation or evidence
 
-TABLE RULES (MANDATORY):
-- Tables use standard markdown pipe format
-- Caption goes BELOW the table as ": Caption text {#tbl-label}"
-- Do NOT put tbl-colwidths inside the table — put it in the Quarto attribute: {#tbl-label tbl-colwidths="[20,20,20,20,20]"}
+=== CITATION RULES (MANDATORY) ===
+- Cite using @citekey: @Smith2021, [@Chen2023; @Wang2024]
+- ONLY use citekeys from the PROVIDED LIST
+- At least 5 different citekeys per major section (Intro, Related Work, Discussion)
+- NEVER write "(Smith, 2021)" — ALWAYS use @citekey
+- NEVER add a References section — Quarto handles this
+- NEVER invent citations not in the list
+
+=== QMD TABLE FORMAT (qmd-writer skill) ===
+- Standard markdown pipe tables only
+- Caption BELOW the table: ": Caption {#tbl-label tbl-colwidths="[30,20,20,30]"}"
+- tbl-colwidths uses INTEGERS (not percentages), sum close to 100
+- Every cell must have a value (no blanks)
+- Bold best results: **0.891**
 - Example:
-  | Col1 | Col2 | Col3 |
-  |------|------|------|
-  | val  | val  | val  |
-  : My table caption {#tbl-main tbl-colwidths="[33,33,34]"}
+  | Method | F1 | Accuracy |
+  |--------|:---:|:---:|
+  | Baseline | 0.812 | 0.834 |
+  | **Ours** | **0.891** | **0.903** |
+  : Main results comparison {#tbl-main tbl-colwidths="[40,30,30]"}
 
-MATH RULES:
-- Display equations: use $$ on separate lines (NOT \\[ \\])
-- Inline math: use $x$ (NOT \\(x\\))
+=== FIGURE REFERENCES ===
+- Reference figures: @fig-1, @fig-2 (not Figure 1)
+- Reference tables: @tbl-main, @tbl-ablation (not Table 1)
 
-HEADING RULES:
-- Do NOT repeat the section name as a heading
-- Use subsection headings (##) for structure within the section`,
+=== MATH ===
+- Display: $$ on separate lines
+- Inline: $x$ (not \\(x\\))
+
+=== HEADINGS ===
+- Do NOT repeat section name as heading
+- Use ## for subsections`,
     })
   );
 

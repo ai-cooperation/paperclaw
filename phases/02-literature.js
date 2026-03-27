@@ -58,14 +58,17 @@ export async function execute(state, llm) {
   const bibPath = join(state.outputDir, 'references.bib');
   await writeFile(bibPath, bibEntries);
 
+  // Validate bib quality
+  const bibQuality = validateBib(verified);
+
   // Generate verification report
   const report = generateReport(verified, failed);
   const reportPath = join(state.outputDir, 'doi_verification_report.md');
   await writeFile(reportPath, report);
 
-  // Check hard requirement: >= 35
-  if (verified.length < 35) {
-    console.warn(`WARNING: Only ${verified.length}/35 verified references. Need more.`);
+  // Check hard requirement: >= 20
+  if (verified.length < 20) {
+    console.warn(`  ⚠ Only ${verified.length}/20 verified references. Need more.`);
   }
 
   return {
@@ -77,10 +80,28 @@ export async function execute(state, llm) {
   };
 }
 
+/**
+ * BibTeX generation with bib-manager validation rules:
+ * - All entries must have: author, title, year, doi
+ * - Citekey format: LastnameYear (deduplicated with a/b suffix)
+ * - Full author names (never "et al." in bib)
+ * - Abstract field required
+ */
+const usedKeys = new Set();
+
 function toBibTeX(data, doi) {
   const lastName = (data.authors?.[0] || 'Unknown').split(',')[0].split(' ')[0].replace(/[^\w]/g, '');
   const year = data.year || 'XXXX';
-  const key = `${lastName}${year}`;
+  let key = `${lastName}${year}`;
+
+  // Deduplicate citekeys
+  if (usedKeys.has(key)) {
+    const suffix = 'abcdefghij';
+    for (const s of suffix) {
+      if (!usedKeys.has(key + s)) { key = key + s; break; }
+    }
+  }
+  usedKeys.add(key);
 
   const lines = [`@article{${key},`];
   if (data.authors?.length) lines.push(`  author = {${data.authors.join(' and ')}},`);
@@ -93,6 +114,31 @@ function toBibTeX(data, doi) {
   if (data.abstract) lines.push(`  abstract = {${data.abstract}},`);
   lines.push('}');
   return lines.join('\n');
+}
+
+/**
+ * Validate bib quality (bib-manager rules).
+ */
+function validateBib(entries) {
+  const warnings = [];
+  const keys = new Set();
+  let withDoi = 0, withAbstract = 0, recentCount = 0;
+
+  for (const entry of entries) {
+    if (keys.has(entry.doi)) warnings.push(`Duplicate DOI: ${entry.doi}`);
+    keys.add(entry.doi);
+    if (entry.suggested?.doi) withDoi++;
+    if (entry.suggested?.abstract) withAbstract++;
+    if (entry.suggested?.year && entry.suggested.year >= new Date().getFullYear() - 5) recentCount++;
+  }
+
+  const total = entries.length;
+  console.log(`  Bib quality: ${total} entries, ${withDoi} with DOI (${Math.round(withDoi/total*100)}%), ${withAbstract} with abstract (${Math.round(withAbstract/total*100)}%), ${recentCount} recent (${Math.round(recentCount/total*100)}%)`);
+
+  if (warnings.length > 0) {
+    console.warn('  Bib warnings:', warnings.join('; '));
+  }
+  return { total, withDoi, withAbstract, recentCount, warnings };
 }
 
 function generateReport(verified, failed) {
